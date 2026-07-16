@@ -76,19 +76,28 @@
   /* ===== 戰鬥畫面 ===== */
   .battle{}
   .stage{flex:1.05;position:relative;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:18px;padding:14px;}
+    align-items:center;justify-content:center;gap:14px;padding:14px;}
+
+  .progress{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:800;
+    color:#fff;text-shadow:1px 1px 0 #000;letter-spacing:.06em;}
+  .progress .dot{width:16px;height:16px;border-radius:4px;background:rgba(0,0,0,.35);
+    border:2px solid #000;}
+  .progress .dot.done{background:#78af6e;}
+  .progress .dot.cur{background:#ffd23f;box-shadow:0 0 0 3px rgba(255,210,63,.4);}
 
   .monster-slot{position:relative;width:min(44vw,330px);aspect-ratio:1;
     display:flex;align-items:center;justify-content:center;
     border:3px dashed rgba(255,255,255,.7);border-radius:16px;background:rgba(255,255,255,.12);}
   .monster-demo{width:74%;image-rendering:pixelated;filter:drop-shadow(0 10px 10px rgba(0,0,0,.18));}
-  .slot-label{position:absolute;bottom:10px;font-size:13px;font-weight:700;color:#fff;
+  .monster-demo.hit{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-12px);}75%{transform:translateX(12px);}}
+  .slot-label{position:absolute;bottom:10px;font-size:14px;font-weight:800;color:#fff;
     background:rgba(0,0,0,.45);padding:3px 12px;border-radius:5px;letter-spacing:.1em;}
 
   .hp{width:min(82%,440px);display:flex;align-items:center;gap:10px;}
   .hp-label{font-size:14px;font-weight:800;color:#fff;min-width:70px;text-shadow:1px 1px 0 #000;letter-spacing:.1em;}
   .hp-track{flex:1;height:22px;background:rgba(0,0,0,.4);border:2px solid #000;border-radius:4px;overflow:hidden;}
-  .hp-fill{height:100%;width:100%;background:linear-gradient(180deg,#8ef08e,#46b446);}
+  .hp-fill{height:100%;width:100%;background:linear-gradient(180deg,#8ef08e,#46b446);transition:width .35s ease;}
   .hp-fill.player{background:linear-gradient(180deg,#8fb6ff,#3d7bdc);}
 
   .panel{flex:1;background:linear-gradient(180deg,#3a3a42,#26262c);
@@ -97,13 +106,13 @@
 
   .qbox{background:rgba(255,255,255,.92);border:3px solid #16161a;border-radius:10px;padding:14px 18px;}
   .q-label{font-size:13px;color:#b5791a;font-weight:800;letter-spacing:.22em;}
-  .q-text{font-size:clamp(18px,3vw,26px);font-weight:800;color:#222;margin-top:4px;}
+  .q-text{font-size:clamp(22px,4.4vw,34px);font-weight:800;color:#222;margin-top:4px;}
 
   .answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .answers .mc-btn{font-size:22px;padding:16px 18px;min-height:68px;min-width:0;width:100%;justify-content:flex-start;}
   .badge{flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
     background:rgba(0,0,0,.35);border-radius:7px;font-weight:900;font-size:18px;}
-  .opt{opacity:.85;}
+  .opt{opacity:.92;}
   .answers .mc-btn:nth-child(1){background:#78af6e;
     box-shadow:inset 4px 4px 0 #a5d29b,inset -4px -4px 0 #50784b,0 5px 0 #2f472c,0 5px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
   .answers .mc-btn:nth-child(2){background:#a0a0a0;
@@ -116,8 +125,16 @@
   .answers .mc-btn:nth-child(2):active{box-shadow:inset 4px 4px 0 #696969,inset -4px -4px 0 #cdcdcd,0 1px 0 #4a4a4a,0 1px 0 4px #2c2c2c;}
   .answers .mc-btn:nth-child(3):active{box-shadow:inset 4px 4px 0 #3d629b,inset -4px -4px 0 #8fb6e6,0 1px 0 #274a73,0 1px 0 4px #16283e;}
   .answers .mc-btn:nth-child(4):active{box-shadow:inset 4px 4px 0 #a87f1f,inset -4px -4px 0 #f0cf72,0 1px 0 #7a5c14,0 1px 0 4px #4a3710;}
+  .answers .mc-btn:disabled{cursor:default;opacity:.96;}
+  .answers .mc-btn.ans-correct{outline:4px solid #6fe06f;outline-offset:-4px;filter:brightness(1.18);}
+  .answers .mc-btn.ans-wrong{outline:4px solid #ff6b6b;outline-offset:-4px;filter:brightness(.82);}
 
   .player-hp{margin-top:auto;}
+
+  /* HUD：分數 */
+  .hud{position:absolute;top:14px;right:70px;z-index:5;font-size:15px;font-weight:800;
+    color:#ffd23f;background:rgba(0,0,0,.45);border:2px solid #000;border-radius:6px;
+    padding:8px 14px;letter-spacing:.06em;text-shadow:1px 1px 0 #000;}
 
   /* 返回掣 */
   .back{position:absolute;top:14px;left:14px;z-index:5;font-size:15px;font-weight:800;
@@ -132,6 +149,46 @@
     color:#fff;background:rgba(0,0,0,.45);border:2px solid #000;border-radius:8px;
     box-shadow:inset 2px 2px 0 rgba(255,255,255,.25),inset -2px -2px 0 rgba(0,0,0,.4);}
   .sound-toggle:active{transform:translateY(2px);}
+
+  /* ===== 通用 overlay（結算 / 設定 / 成績）===== */
+  .overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.6);padding:20px;}
+  .overlay.hidden{display:none;}
+  .card{background:linear-gradient(180deg,#3a3a42,#23232a);border:5px solid #16161a;border-radius:14px;
+    padding:26px 24px;max-width:440px;width:100%;text-align:center;color:#fff;
+    box-shadow:0 14px 40px rgba(0,0,0,.5);}
+  .card h2{margin:0 0 6px;font-size:30px;color:#ffd23f;
+    text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;}
+  .card .sub{font-size:14px;opacity:.85;margin-bottom:18px;letter-spacing:.06em;}
+  .card .stats{display:flex;flex-direction:column;gap:10px;margin:14px 0 20px;}
+  .card .row{display:flex;justify-content:space-between;background:rgba(255,255,255,.08);
+    padding:10px 16px;border-radius:8px;font-size:17px;font-weight:700;}
+  .card .row b{color:#ffd23f;}
+  .card .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .card .mc-btn{font-size:19px;padding:14px 22px;min-width:150px;}
+  .card .mc-btn.primary{background:#78af6e;
+    box-shadow:inset 4px 4px 0 #a5d29b,inset -4px -4px 0 #50784b,0 5px 0 #2f472c,0 5px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
+  .card .mc-btn.ghost{background:#5a5a64;
+    box-shadow:inset 4px 4px 0 #7a7a84,inset -4px -4px 0 #3a3a42,0 5px 0 #23232a,0 5px 0 4px #141418;text-shadow:2px 2px 0 #23232a;}
+  .card .mc-btn.primary:active{box-shadow:inset 4px 4px 0 #50784b,inset -4px -4px 0 #a5d29b,0 1px 0 #2f472c,0 1px 0 4px #1c2a1a;}
+  .card .mc-btn.ghost:active{box-shadow:inset 4px 4px 0 #3a3a42,inset -4px -4px 0 #7a7a84,0 1px 0 #23232a,0 1px 0 4px #141418;}
+
+  /* 設定：難度選擇 */
+  .diff-group{display:flex;flex-direction:column;gap:12px;margin:8px 0 20px;}
+  .diff-btn{font-size:20px;padding:16px;font-weight:800;border:3px solid #16161a;border-radius:10px;
+    cursor:pointer;color:#fff;letter-spacing:.06em;background:#52525c;
+    box-shadow:inset 3px 3px 0 rgba(255,255,255,.18),inset -3px -3px 0 rgba(0,0,0,.3);}
+  .diff-btn.sel{background:#78af6e;outline:3px solid #ffd23f;outline-offset:2px;
+    box-shadow:inset 3px 3px 0 #a5d29b,inset -3px -3px 0 #50784b;}
+  .diff-btn small{display:block;font-size:13px;font-weight:600;opacity:.85;margin-top:3px;letter-spacing:.02em;}
+
+  .toast{position:fixed;top:38%;left:50%;transform:translateX(-50%);z-index:30;
+    font-size:34px;font-weight:900;color:#ffd23f;pointer-events:none;opacity:0;
+    text-shadow:-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,3px 3px 0 #000;
+    transition:opacity .2s ease,transform .2s ease;}
+  .toast.show{opacity:1;animation:pop .7s ease;}
+  @keyframes pop{0%{transform:translateX(-50%) scale(.4);}40%{transform:translateX(-50%) scale(1.15);}
+    100%{transform:translateX(-50%) scale(1);}}
 </style>
 </head>
 <body>
@@ -154,9 +211,9 @@
     <div class="btns">
       <button class="mc-btn start"   id="btn-start">
         <img class="ic" src="play_icon.png" alt="">開始遊戲</button>
-      <button class="mc-btn settings" onclick="alert('⚙ 開啟設定')">
+      <button class="mc-btn settings" id="btn-settings">
         <img class="ic" src="gear_icon.png" alt="">設定</button>
-      <button class="mc-btn scores"  onclick="alert('🏆 查看成績')">
+      <button class="mc-btn scores"  id="btn-scores">
         <img class="ic" src="gold_coin.png" alt="">查看成績</button>
     </div>
 
@@ -166,34 +223,88 @@
   <!-- ====== 戰鬥畫面 ====== -->
   <div id="battle" class="screen battle hidden">
     <button class="back" id="btn-back">❰ 返回主選單</button>
+    <div class="hud" id="hud">得分 0</div>
     <div class="stage">
+      <div class="progress" id="progress"></div>
       <div class="hp">
         <span class="hp-label">怪物 HP</span>
-        <div class="hp-track"><div class="hp-fill"></div></div>
+        <div class="hp-track"><div class="hp-fill" id="monster-hp"></div></div>
       </div>
       <div class="monster-slot">
-        <img class="monster-demo" src="monster_slime.png" alt="">
-        <span class="slot-label">怪物圖（預留位置）</span>
+        <img class="monster-demo" id="monster-img" src="monster_slime.png" alt="">
+        <span class="slot-label" id="monster-name">史萊姆</span>
       </div>
     </div>
 
     <div class="panel">
       <div class="qbox">
         <div class="q-label">題目</div>
-        <div class="q-text">（題目預留位置）</div>
+        <div class="q-text" id="q-text">準備中…</div>
       </div>
-      <div class="answers">
-        <button class="mc-btn"><span class="badge">A</span><span class="opt">（選項預留）</span></button>
-        <button class="mc-btn"><span class="badge">B</span><span class="opt">（選項預留）</span></button>
-        <button class="mc-btn"><span class="badge">C</span><span class="opt">（選項預留）</span></button>
-        <button class="mc-btn"><span class="badge">D</span><span class="opt">（選項預留）</span></button>
+      <div class="answers" id="answers">
+        <button class="mc-btn"><span class="badge">A</span><span class="opt"></span></button>
+        <button class="mc-btn"><span class="badge">B</span><span class="opt"></span></button>
+        <button class="mc-btn"><span class="badge">C</span><span class="opt"></span></button>
+        <button class="mc-btn"><span class="badge">D</span><span class="opt"></span></button>
       </div>
       <div class="hp player-hp">
         <span class="hp-label">玩家 HP</span>
-        <div class="hp-track"><div class="hp-fill player"></div></div>
+        <div class="hp-track"><div class="hp-fill player" id="player-hp"></div></div>
       </div>
     </div>
   </div>
+
+  <!-- ====== 結算 overlay ====== -->
+  <div id="overlay-result" class="overlay hidden">
+    <div class="card">
+      <h2 id="result-title">勝利！</h2>
+      <div class="sub" id="result-sub"></div>
+      <div class="stats">
+        <div class="row"><span>得分</span><b id="r-score">0</b></div>
+        <div class="row"><span>答對題數</span><b id="r-right">0 / 0</b></div>
+        <div class="row"><span>打敗怪物</span><b id="r-mon">0 / 3</b></div>
+        <div class="row"><span>用時</span><b id="r-time">00:00</b></div>
+      </div>
+      <div class="acts">
+        <button class="mc-btn primary" id="btn-again">再玩一次</button>
+        <button class="mc-btn ghost"   id="btn-tomenu">返回主選單</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 設定 overlay ====== -->
+  <div id="overlay-settings" class="overlay hidden">
+    <div class="card">
+      <h2>設定</h2>
+      <div class="sub">選擇題目難度（下一次開始遊戲生效）</div>
+      <div class="diff-group" id="diff-group">
+        <button class="diff-btn" data-diff="easy">簡單<small>加、減（兩位數以內）</small></button>
+        <button class="diff-btn" data-diff="normal">普通<small>加、減、乘（含九九表）</small></button>
+        <button class="diff-btn" data-diff="hard">困難<small>加、減、乘、除（四則混合）</small></button>
+      </div>
+      <div class="acts">
+        <button class="mc-btn primary" id="btn-set-close">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 成績 overlay ====== -->
+  <div id="overlay-scores" class="overlay hidden">
+    <div class="card">
+      <h2>成績榜</h2>
+      <div class="sub">本機最佳記錄</div>
+      <div class="stats">
+        <div class="row"><span>最佳得分</span><b id="s-best">0</b></div>
+        <div class="row"><span>最高正確率</span><b id="s-acc">0%</b></div>
+        <div class="row"><span>通關次數</span><b id="s-wins">0</b></div>
+      </div>
+      <div class="acts">
+        <button class="mc-btn ghost" id="btn-score-close">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
 <script>
   /* ===== 音效引擎（Web Audio API 合成，自包含、無外部檔）===== */
@@ -220,44 +331,222 @@
       osc.connect(g); g.connect(this.ctx.destination);
       osc.start(t); osc.stop(t + dur + 0.03);
     },
-    click(){ this.tone(420, 0.07, 'square', 0.14); },                       // 按鈕點擊
-    start(){ [523,659,784,1047].forEach((f,i)=>this.tone(f,0.18,'square',0.17,i*0.09)); }, // 進入戰鬥
-    select(){ this.tone(330, 0.09, 'triangle', 0.15); },                    // 選答案
-    correct(){ this.tone(659,0.12,'square',0.2); this.tone(988,0.24,'square',0.2,0.1); },  // 答對
-    wrong(){ this.tone(220,0.22,'sawtooth',0.2); this.tone(130,0.34,'sawtooth',0.2,0.12); } // 答錯
+    click(){ this.tone(420, 0.07, 'square', 0.14); },
+    start(){ [523,659,784,1047].forEach((f,i)=>this.tone(f,0.18,'square',0.17,i*0.09)); },
+    select(){ this.tone(330, 0.09, 'triangle', 0.15); },
+    correct(){ this.tone(659,0.12,'square',0.2); this.tone(988,0.24,'square',0.2,0.1); },
+    wrong(){ this.tone(220,0.22,'sawtooth',0.2); this.tone(130,0.34,'sawtooth',0.2,0.12); },
+    win(){ [523,659,784,1047,1319].forEach((f,i)=>this.tone(f,0.22,'square',0.2,i*0.12)); },
+    lose(){ [392,330,262,196].forEach((f,i)=>this.tone(f,0.28,'sawtooth',0.2,i*0.14)); }
   };
 
-  const menu = document.getElementById('menu');
-  const battle = document.getElementById('battle');
-  function show(target){
-    [menu, battle].forEach(s => s.classList.add('hidden'));
-    target.classList.remove('hidden');
+  /* ===== 遊戲數據 ===== */
+  const MONSTERS = [
+    {name:'史萊姆', img:'monster_slime.png',  hp:3},
+    {name:'殭屍',   img:'monster_zombie.png', hp:3},
+    {name:'蜘蛛',   img:'monster_spider.png', hp:3}
+  ];
+  const PLAYER_MAX_HP = 5;
+  const SCORE_PER = 10;
+
+  const state = {
+    diff:'normal',
+    mIdx:0, mHp:3,
+    pHp:PLAYER_MAX_HP,
+    score:0, asked:0, right:0,
+    startTime:0, locked:false, currentAnswer:0
+  };
+
+  /* 讀取難度 / 成績 */
+  try{ const d = localStorage.getItem('mcMathDiff'); if(d) state.diff = d; }catch(e){}
+  let best = {score:0, acc:0, wins:0};
+  try{ const b = localStorage.getItem('mcMathBest'); if(b) best = JSON.parse(b); }catch(e){}
+
+  /* ===== 題目生成 ===== */
+  function ri(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    return arr;
+  }
+  function makeQuestion(){
+    const ops = state.diff==='easy' ? ['+','-']
+              : state.diff==='normal' ? ['+','-','×']
+              : ['+','-','×','÷'];
+    const op = ops[Math.floor(Math.random()*ops.length)];
+    let a,b,ans,text;
+    if(op==='+'){
+      const lim = state.diff==='easy'?20:state.diff==='normal'?50:99;
+      a=ri(1,lim); b=ri(1,lim); ans=a+b; text=`${a} + ${b}`;
+    } else if(op==='-'){
+      const lim = state.diff==='easy'?20:state.diff==='normal'?50:99;
+      a=ri(1,lim); b=ri(0,a); ans=a-b; text=`${a} − ${b}`;
+    } else if(op==='×'){
+      const lim = state.diff==='easy'?9:state.diff==='normal'?12:15;
+      a=ri(2,lim); b=ri(2,lim); ans=a*b; text=`${a} × ${b}`;
+    } else { // ÷ 整除
+      b=ri(2,9); const q=ri(2,12); a=b*q; ans=q; text=`${a} ÷ ${b}`;
+    }
+    return {text:text+' = ?', ans:ans};
+  }
+  function buildOptions(ans){
+    const set = new Set([ans]);
+    let tries=0;
+    while(set.size<4 && tries<60){
+      tries++;
+      const step = 1 + Math.floor(Math.random()*Math.max(6, Math.abs(ans)));
+      const d = ans + (Math.random()<0.5?-step:step);
+      if(d>=0 && !set.has(d)) set.add(d);
+    }
+    let k=1;
+    while(set.size<4){ const d=ans+k; if(d>=0) set.add(d); k++; }
+    return shuffle([...set]);
   }
 
-  // 全站按鈕：點擊聲（開始/設定/成績/返回 都用 click）
-  document.querySelectorAll('.mc-btn').forEach(b => {
-    b.addEventListener('click', () => Sfx.click());
-  });
+  /* ===== DOM ===== */
+  const $ = id => document.getElementById(id);
+  const menu=$('menu'), battle=$('battle');
+  const monsterImg=$('monster-img'), monsterName=$('monster-name');
+  const monsterHp=$('monster-hp'), playerHp=$('player-hp');
+  const qText=$('q-text'), hud=$('hud'), progress=$('progress');
+  const answerBtns=[...$('answers').querySelectorAll('.mc-btn')];
+  const toast=$('toast');
 
-  document.getElementById('btn-start').addEventListener('click', () => {
-    Sfx.start();
-    show(battle);
-  });
-  document.getElementById('btn-back').addEventListener('click', () => show(menu));
+  function show(target){
+    [menu,battle].forEach(s=>s.classList.add('hidden'));
+    target.classList.remove('hidden');
+  }
+  function fmtTime(ms){
+    const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }
+  function showToast(txt){
+    toast.textContent=txt; toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+  }
 
-  // 答案選項：暫時播放選擇聲 + 提示（接題目邏輯時改這段）
-  document.querySelectorAll('.answers .mc-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      Sfx.select();
-      alert('（選項預留）接題目邏輯後，此處判定對錯並播音效');
+  /* ===== 戰鬥流程 ===== */
+  function renderHp(){
+    monsterHp.style.width = (state.mHp/MONSTERS[state.mIdx].hp*100)+'%';
+    playerHp.style.width  = (state.pHp/PLAYER_MAX_HP*100)+'%';
+  }
+  function renderProgress(){
+    progress.innerHTML='';
+    MONSTERS.forEach((m,i)=>{
+      const d=document.createElement('span'); d.className='dot';
+      if(i<state.mIdx) d.classList.add('done'); else if(i===state.mIdx) d.classList.add('cur');
+      progress.appendChild(d);
     });
+    const lbl=document.createElement('span');
+    lbl.textContent=`怪物 ${state.mIdx+1}/${MONSTERS.length} · ${MONSTERS[state.mIdx].name}`;
+    progress.appendChild(lbl);
+  }
+  function loadMonster(){
+    const m=MONSTERS[state.mIdx];
+    state.mHp=m.hp;
+    monsterImg.src=m.img; monsterName.textContent=m.name;
+    renderHp(); renderProgress();
+  }
+  function newQuestion(){
+    state.locked=false;
+    answerBtns.forEach(b=>{ b.disabled=false; b.classList.remove('ans-correct','ans-wrong'); });
+    const q=makeQuestion(); state.currentAnswer=q.ans; state.asked++;
+    qText.textContent=q.text;
+    const opts=buildOptions(q.ans);
+    answerBtns.forEach((b,i)=>{ b.querySelector('.opt').textContent=opts[i]; });
+  }
+  function startBattle(){
+    state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
+    state.startTime=Date.now();
+    hud.textContent='得分 0';
+    loadMonster(); newQuestion();
+  }
+
+  function onAnswer(idx){
+    if(state.locked) return;
+    state.locked=true;
+    answerBtns.forEach(b=>b.disabled=true);
+    const chosen=parseInt(answerBtns[idx].querySelector('.opt').textContent,10);
+    const correct = (chosen===state.currentAnswer);
+
+    // 標記正確答案
+    answerBtns.forEach((b,i)=>{
+      if(parseInt(b.querySelector('.opt').textContent,10)===state.currentAnswer) b.classList.add('ans-correct');
+    });
+    if(!correct) answerBtns[idx].classList.add('ans-wrong');
+
+    if(correct){
+      state.right++; state.score+=SCORE_PER; hud.textContent='得分 '+state.score;
+      Sfx.correct(); showToast('答對！');
+      setTimeout(()=>{
+        state.mHp--;
+        monsterImg.classList.add('hit'); setTimeout(()=>monsterImg.classList.remove('hit'),400);
+        if(state.mHp<=0){
+          if(state.mIdx>=MONSTERS.length-1){ endGame(true); return; }
+          state.mIdx++; loadMonster(); showToast(MONSTERS[state.mIdx].name+' 出現！');
+        }
+        newQuestion();
+      }, 850);
+    } else {
+      state.pHp--; Sfx.wrong(); showToast('答錯！');
+      setTimeout(()=>{
+        if(state.pHp<=0){ endGame(false); return; }
+        newQuestion();
+      }, 1100);
+    }
+  }
+  answerBtns.forEach((b,i)=> b.addEventListener('click',()=>{ Sfx.select(); onAnswer(i); }));
+
+  function endGame(win){
+    const monsBeat = win ? MONSTERS.length : state.mIdx;
+    const time = Date.now()-state.startTime;
+    const acc = state.asked? Math.round(state.right/state.asked*100):0;
+    if(win){
+      best.wins++;
+      if(state.score>best.score) best.score=state.score;
+      if(acc>best.acc) best.acc=acc;
+      try{ localStorage.setItem('mcMathBest', JSON.stringify(best)); }catch(e){}
+    }
+    $('result-title').textContent = win?'勝利！':'失敗…';
+    $('result-sub').textContent   = win? '你打敗了所有怪物！' : '玩家 HP 耗盡，再試一次吧！';
+    $('r-score').textContent = state.score;
+    $('r-right').textContent = state.right+' / '+state.asked;
+    $('r-mon').textContent   = monsBeat+' / '+MONSTERS.length;
+    $('r-time').textContent  = fmtTime(time);
+    win?Sfx.win():Sfx.lose();
+    $('overlay-result').classList.remove('hidden');
+  }
+
+  /* ===== 按鈕綁定 ===== */
+  $('btn-start').addEventListener('click', ()=>{ Sfx.start(); show(battle); startBattle(); });
+  $('btn-back').addEventListener('click', ()=> show(menu));
+  $('btn-settings').addEventListener('click', ()=>{
+    document.querySelectorAll('.diff-btn').forEach(x=>x.classList.toggle('sel', x.dataset.diff===state.diff));
+    $('overlay-settings').classList.remove('hidden');
+  });
+  $('btn-scores').addEventListener('click', ()=>{
+    $('s-best').textContent=best.score;
+    $('s-acc').textContent=best.acc+'%';
+    $('s-wins').textContent=best.wins;
+    $('overlay-scores').classList.remove('hidden');
+  });
+  document.querySelectorAll('.diff-btn').forEach(x=> x.addEventListener('click',()=>{
+    state.diff=x.dataset.diff;
+    try{ localStorage.setItem('mcMathDiff', state.diff); }catch(e){}
+    document.querySelectorAll('.diff-btn').forEach(o=>o.classList.toggle('sel', o===x));
+  }));
+  $('btn-set-close').addEventListener('click', ()=> $('overlay-settings').classList.add('hidden'));
+  $('btn-score-close').addEventListener('click', ()=> $('overlay-scores').classList.add('hidden'));
+  $('btn-again').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(battle); startBattle(); });
+  $('btn-tomenu').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(menu); });
+
+  // 全站按鈕點擊聲（結算/設定/成績內的按鈕）
+  document.querySelectorAll('.mc-btn, .diff-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{ if(!b.classList.contains('ans-correct')) Sfx.click(); });
   });
 
   // 靜音掣
-  const sToggle = document.getElementById('sound-toggle');
-  sToggle.addEventListener('click', () => {
-    Sfx.muted = !Sfx.muted;
-    sToggle.textContent = Sfx.muted ? '🔇' : '🔊';
+  const sToggle=$('sound-toggle');
+  sToggle.addEventListener('click', ()=>{
+    Sfx.muted=!Sfx.muted;
+    sToggle.textContent = Sfx.muted?'🔇':'🔊';
     if(!Sfx.muted) Sfx.click();
   });
 </script>
