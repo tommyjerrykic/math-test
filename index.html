@@ -59,6 +59,9 @@
   @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
   .tagline{margin-top:-14px;font-size:15px;color:#234;background:rgba(255,255,255,.55);
     padding:4px 14px;border-radius:4px;letter-spacing:.18em;font-weight:700;}
+  .diff-now{margin-top:2px;font-size:14px;color:#234;background:rgba(255,255,255,.7);
+    padding:5px 16px;border-radius:4px;font-weight:800;letter-spacing:.08em;
+    border:2px solid rgba(0,0,0,.15);}
 
   .btns{display:flex;flex-direction:column;gap:20px;align-items:center;z-index:3;}
   .menu .mc-btn{font-size:23px;padding:15px 30px 15px 18px;min-width:300px;}
@@ -74,7 +77,7 @@
   .menu .mc-btn.scores:active {box-shadow:inset 4px 4px 0 #3d629b,inset -4px -4px 0 #8fb6e6,0 2px 0 #274a73,0 2px 0 4px #16283e;}
 
   /* ===== 戰鬥畫面 ===== */
-  .battle{}
+  .battle{overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .stage{flex:1.05;position:relative;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:14px;padding:14px;}
 
@@ -129,7 +132,9 @@
   .answers .mc-btn.ans-correct{outline:4px solid #6fe06f;outline-offset:-4px;filter:brightness(1.18);}
   .answers .mc-btn.ans-wrong{outline:4px solid #ff6b6b;outline-offset:-4px;filter:brightness(.82);}
 
-  .player-hp{margin-top:auto;}
+  .player-hp{margin:auto calc(-1 * clamp(14px,4vw,44px)) 0;padding:10px clamp(14px,4vw,44px) 14px;
+    position:sticky;bottom:0;z-index:4;background:#26262c;
+    border-top:1px solid rgba(0,0,0,.4);}
 
   /* HUD：分數 */
   .hud{position:absolute;top:14px;right:70px;z-index:5;font-size:15px;font-weight:800;
@@ -208,6 +213,7 @@
 
     <h1 class="title">四則運算大冒險</h1>
     <div class="tagline">數學小遊戲</div>
+    <div class="diff-now" id="diff-now">難度：普通</div>
     <div class="btns">
       <button class="mc-btn start"   id="btn-start">
         <img class="ic" src="play_icon.png" alt="">開始遊戲</button>
@@ -369,19 +375,24 @@
     return arr;
   }
   function makeQuestion(){
-    const ops = state.diff==='easy' ? ['+','-']
-              : state.diff==='normal' ? ['+','-','×']
-              : ['+','-','×','÷'];
-    const op = ops[Math.floor(Math.random()*ops.length)];
+    const d = state.diff;
+    let op;
+    if(d==='easy'){
+      op = Math.random()<0.5 ? '+' : '-';
+    } else if(d==='normal'){
+      op = ['+','-','×'][Math.floor(Math.random()*3)];
+    } else { // 困難：偏重 × ÷
+      op = Math.random()<0.6 ? (Math.random()<0.5?'×':'÷') : (Math.random()<0.5?'+':'-');
+    }
     let a,b,ans,text;
     if(op==='+'){
-      const lim = state.diff==='easy'?20:state.diff==='normal'?50:99;
+      const lim = d==='easy'?20:(d==='hard'?99:50);
       a=ri(1,lim); b=ri(1,lim); ans=a+b; text=`${a} + ${b}`;
     } else if(op==='-'){
-      const lim = state.diff==='easy'?20:state.diff==='normal'?50:99;
+      const lim = d==='easy'?20:(d==='hard'?99:50);
       a=ri(1,lim); b=ri(0,a); ans=a-b; text=`${a} − ${b}`;
     } else if(op==='×'){
-      const lim = state.diff==='easy'?9:state.diff==='normal'?12:15;
+      const lim = d==='easy'?9:(d==='hard'?15:12);
       a=ri(2,lim); b=ri(2,lim); ans=a*b; text=`${a} × ${b}`;
     } else { // ÷ 整除
       b=ri(2,9); const q=ri(2,12); a=b*q; ans=q; text=`${a} ÷ ${b}`;
@@ -410,6 +421,12 @@
   const qText=$('q-text'), hud=$('hud'), progress=$('progress');
   const answerBtns=[...$('answers').querySelectorAll('.mc-btn')];
   const toast=$('toast');
+
+  function refreshDiff(){
+    const map={easy:'簡單',normal:'普通',hard:'困難'};
+    $('diff-now').textContent='難度：'+map[state.diff];
+  }
+  refreshDiff();
 
   function show(target){
     [menu,battle].forEach(s=>s.classList.add('hidden'));
@@ -477,8 +494,8 @@
     if(correct){
       state.right++; state.score+=SCORE_PER; hud.textContent='得分 '+state.score;
       Sfx.correct(); showToast('答對！');
+      state.mHp--; renderHp();
       setTimeout(()=>{
-        state.mHp--;
         monsterImg.classList.add('hit'); setTimeout(()=>monsterImg.classList.remove('hit'),400);
         if(state.mHp<=0){
           if(state.mIdx>=MONSTERS.length-1){ endGame(true); return; }
@@ -487,7 +504,7 @@
         newQuestion();
       }, 850);
     } else {
-      state.pHp--; Sfx.wrong(); showToast('答錯！');
+      state.pHp--; renderHp(); Sfx.wrong(); showToast('答錯！');
       setTimeout(()=>{
         if(state.pHp<=0){ endGame(false); return; }
         newQuestion();
@@ -521,6 +538,7 @@
   $('btn-back').addEventListener('click', ()=> show(menu));
   $('btn-settings').addEventListener('click', ()=>{
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.toggle('sel', x.dataset.diff===state.diff));
+    refreshDiff();
     $('overlay-settings').classList.remove('hidden');
   });
   $('btn-scores').addEventListener('click', ()=>{
@@ -533,6 +551,7 @@
     state.diff=x.dataset.diff;
     try{ localStorage.setItem('mcMathDiff', state.diff); }catch(e){}
     document.querySelectorAll('.diff-btn').forEach(o=>o.classList.toggle('sel', o===x));
+    refreshDiff();
   }));
   $('btn-set-close').addEventListener('click', ()=> $('overlay-settings').classList.add('hidden'));
   $('btn-score-close').addEventListener('click', ()=> $('overlay-scores').classList.add('hidden'));
