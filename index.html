@@ -419,7 +419,9 @@
     const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
   }
   function showToast(txt){
+    clearTimeout(toast._t);
     toast.textContent=txt; toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+    toast._t=setTimeout(()=> toast.classList.remove('show'), 750);
   }
 
   /* ===== 戰鬥流程 ===== */
