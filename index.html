@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>四則運算大冒險</title>
+<style>
+  :root{ --ink:#1b1b1b; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;
+    touch-action:manipulation;overscroll-behavior:none;}
+  html,body{height:100%;margin:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Heiti TC",sans-serif;
+    background:linear-gradient(180deg,#8ecbff 0%,#bfe6ff 55%,#e8f7ff 100%);
+    overflow:hidden;position:relative;color:#fff;}
+
+  /* ===== 畫面切換 ===== */
+  .screen{position:fixed;inset:0;display:flex;flex-direction:column;
+    transition:opacity .45s ease, transform .45s ease;
+    z-index:2;}
+  .screen.hidden{opacity:0;transform:scale(1.03);pointer-events:none;visibility:hidden;z-index:1;}
+
+  /* ===== 共用：Minecraft 浮雕按鈕 ===== */
+  .mc-btn{position:relative;cursor:pointer;border:none;font-family:inherit;
+    font-weight:800;color:#fff;letter-spacing:.08em;display:flex;align-items:center;gap:12px;
+    justify-content:center;image-rendering:pixelated;transition:transform .05s,filter .05s;}
+  .mc-btn:hover{filter:brightness(1.08);}
+  @media(hover:none){ .mc-btn:hover{filter:none;} }
+  .mc-btn:active{transform:translateY(4px);}
+
+  /* ===== 主選單 ===== */
+  .cloud{position:absolute;width:160px;height:80px;image-rendering:pixelated;
+    opacity:.9;pointer-events:none;filter:drop-shadow(0 6px 0 rgba(0,0,0,.06));z-index:1;}
+  .c1{top:12%;left:-180px;animation:drift 38s linear infinite;}
+  .c2{top:26%;left:-180px;animation:drift 52s linear infinite 8s;transform:scale(.8);}
+  .c3{top:6%; left:-180px;animation:drift 64s linear infinite 20s;transform:scale(1.1);}
+  @keyframes drift{from{transform:translateX(0);}to{transform:translateX(120vw);}}
+
+  .deco{position:absolute;image-rendering:pixelated;pointer-events:none;z-index:1;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));}
+  .d-diamond{top:18%;right:8%;width:84px;animation:bob 3.2s ease-in-out infinite;}
+  .d-apple  {top:60%;left:7%; width:78px;animation:bob 3.8s ease-in-out infinite .6s;}
+  .d-torch  {top:30%;left:12%;width:60px;animation:bob 4.4s ease-in-out infinite .3s;}
+  .d-creeper{top:55%;right:9%;width:90px;animation:bob 3.5s ease-in-out infinite .9s;}
+  .d-coin   {top:14%;left:16%;width:70px;animation:bob 3s ease-in-out infinite .2s;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+
+  .ground{position:absolute;left:0;bottom:0;width:100%;height:150px;z-index:1;}
+  .grass{height:84px;background:url(grass_block.png) repeat-x;background-size:84px 84px;}
+  .dirt {height:66px;background:url(dirt_block.png)  repeat-x;background-size:84px 84px;
+         box-shadow:inset 0 8px 12px rgba(0,0,0,.15);}
+
+  .menu{align-items:center;justify-content:center;gap:30px;padding:0 16px;z-index:2;}
+  .title{font-size:clamp(34px,7vw,72px);font-weight:900;letter-spacing:.08em;
+    color:#ffd23f;text-align:center;line-height:1.15;
+    text-shadow:-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,3px 3px 0 #000,
+      -3px 0 0 #000,3px 0 0 #000,0 -3px 0 #000,0 3px 0 #000,0 8px 0 #b5791a,0 11px 0 #000;
+    animation:float 3.4s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  .tagline{margin-top:-14px;font-size:15px;color:#234;background:rgba(255,255,255,.55);
+    padding:4px 14px;border-radius:4px;letter-spacing:.18em;font-weight:700;}
+
+  .btns{display:flex;flex-direction:column;gap:20px;align-items:center;z-index:3;}
+  .menu .mc-btn{font-size:23px;padding:15px 30px 15px 18px;min-width:300px;}
+  .menu .mc-btn .ic{width:34px;height:34px;image-rendering:pixelated;}
+  .menu .mc-btn.start  {background:#78af6e;
+    box-shadow:inset 4px 4px 0 #a5d29b,inset -4px -4px 0 #50784b,0 6px 0 #2f472c,0 6px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
+  .menu .mc-btn.settings{background:#a0a0a0;
+    box-shadow:inset 4px 4px 0 #cdcdcd,inset -4px -4px 0 #696969,0 6px 0 #4a4a4a,0 6px 0 4px #2c2c2c;text-shadow:2px 2px 0 #4a4a4a;}
+  .menu .mc-btn.scores{background:#5b8bd0;
+    box-shadow:inset 4px 4px 0 #8fb6e6,inset -4px -4px 0 #3d629b,0 6px 0 #274a73,0 6px 0 4px #16283e;text-shadow:2px 2px 0 #274a73;}
+  .menu .mc-btn.start:active  {box-shadow:inset 4px 4px 0 #50784b,inset -4px -4px 0 #a5d29b,0 2px 0 #2f472c,0 2px 0 4px #1c2a1a;}
+  .menu .mc-btn.settings:active{box-shadow:inset 4px 4px 0 #696969,inset -4px -4px 0 #cdcdcd,0 2px 0 #4a4a4a,0 2px 0 4px #2c2c2c;}
+  .menu .mc-btn.scores:active {box-shadow:inset 4px 4px 0 #3d629b,inset -4px -4px 0 #8fb6e6,0 2px 0 #274a73,0 2px 0 4px #16283e;}
+
+  /* ===== 戰鬥畫面 ===== */
+  .battle{}
+  .stage{flex:1.05;position:relative;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;padding:14px;}
+
+  .monster-slot{position:relative;width:min(44vw,330px);aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center;
+    border:3px dashed rgba(255,255,255,.7);border-radius:16px;background:rgba(255,255,255,.12);}
+  .monster-demo{width:74%;image-rendering:pixelated;filter:drop-shadow(0 10px 10px rgba(0,0,0,.18));}
+  .slot-label{position:absolute;bottom:10px;font-size:13px;font-weight:700;color:#fff;
+    background:rgba(0,0,0,.45);padding:3px 12px;border-radius:5px;letter-spacing:.1em;}
+
+  .hp{width:min(82%,440px);display:flex;align-items:center;gap:10px;}
+  .hp-label{font-size:14px;font-weight:800;color:#fff;min-width:70px;text-shadow:1px 1px 0 #000;letter-spacing:.1em;}
+  .hp-track{flex:1;height:22px;background:rgba(0,0,0,.4);border:2px solid #000;border-radius:4px;overflow:hidden;}
+  .hp-fill{height:100%;width:100%;background:linear-gradient(180deg,#8ef08e,#46b446);}
+  .hp-fill.player{background:linear-gradient(180deg,#8fb6ff,#3d7bdc);}
+
+  .panel{flex:1;background:linear-gradient(180deg,#3a3a42,#26262c);
+    border-top:6px solid #16161a;padding:18px clamp(14px,4vw,44px) 22px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 -10px 22px rgba(0,0,0,.32);}
+
+  .qbox{background:rgba(255,255,255,.92);border:3px solid #16161a;border-radius:10px;padding:14px 18px;}
+  .q-label{font-size:13px;color:#b5791a;font-weight:800;letter-spacing:.22em;}
+  .q-text{font-size:clamp(18px,3vw,26px);font-weight:800;color:#222;margin-top:4px;}
+
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .answers .mc-btn{font-size:22px;padding:16px 18px;min-height:68px;min-width:0;width:100%;justify-content:flex-start;}
+  .badge{flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);border-radius:7px;font-weight:900;font-size:18px;}
+  .opt{opacity:.85;}
+  .answers .mc-btn:nth-child(1){background:#78af6e;
+    box-shadow:inset 4px 4px 0 #a5d29b,inset -4px -4px 0 #50784b,0 5px 0 #2f472c,0 5px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
+  .answers .mc-btn:nth-child(2){background:#a0a0a0;
+    box-shadow:inset 4px 4px 0 #cdcdcd,inset -4px -4px 0 #696969,0 5px 0 #4a4a4a,0 5px 0 4px #2c2c2c;text-shadow:2px 2px 0 #4a4a4a;}
+  .answers .mc-btn:nth-child(3){background:#5b8bd0;
+    box-shadow:inset 4px 4px 0 #8fb6e6,inset -4px -4px 0 #3d629b,0 5px 0 #274a73,0 5px 0 4px #16283e;text-shadow:2px 2px 0 #274a73;}
+  .answers .mc-btn:nth-child(4){background:#d8a93a;
+    box-shadow:inset 4px 4px 0 #f0cf72,inset -4px -4px 0 #a87f1f,0 5px 0 #7a5c14,0 5px 0 4px #4a3710;text-shadow:2px 2px 0 #7a5c14;}
+  .answers .mc-btn:nth-child(1):active{box-shadow:inset 4px 4px 0 #50784b,inset -4px -4px 0 #a5d29b,0 1px 0 #2f472c,0 1px 0 4px #1c2a1a;}
+  .answers .mc-btn:nth-child(2):active{box-shadow:inset 4px 4px 0 #696969,inset -4px -4px 0 #cdcdcd,0 1px 0 #4a4a4a,0 1px 0 4px #2c2c2c;}
+  .answers .mc-btn:nth-child(3):active{box-shadow:inset 4px 4px 0 #3d629b,inset -4px -4px 0 #8fb6e6,0 1px 0 #274a73,0 1px 0 4px #16283e;}
+  .answers .mc-btn:nth-child(4):active{box-shadow:inset 4px 4px 0 #a87f1f,inset -4px -4px 0 #f0cf72,0 1px 0 #7a5c14,0 1px 0 4px #4a3710;}
+
+  .player-hp{margin-top:auto;}
+
+  /* 返回掣 */
+  .back{position:absolute;top:14px;left:14px;z-index:5;font-size:15px;font-weight:800;
+    color:#fff;background:rgba(0,0,0,.45);border:2px solid #000;border-radius:6px;
+    padding:8px 14px;cursor:pointer;letter-spacing:.08em;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,.25),inset -2px -2px 0 rgba(0,0,0,.4);}
+  .back:active{transform:translateY(2px);}
+
+  /* 靜音掣 */
+  .sound-toggle{position:absolute;top:14px;right:14px;z-index:6;width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;
+    color:#fff;background:rgba(0,0,0,.45);border:2px solid #000;border-radius:8px;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,.25),inset -2px -2px 0 rgba(0,0,0,.4);}
+  .sound-toggle:active{transform:translateY(2px);}
+</style>
+</head>
+<body>
+
+  <div class="sound-toggle" id="sound-toggle" title="音效開關">🔊</div>
+
+  <!-- ====== 主選單 ====== -->
+  <div id="menu" class="screen menu">
+    <img class="cloud c1" src="cloud.png" alt="">
+    <img class="cloud c2" src="cloud.png" alt="">
+    <img class="cloud c3" src="cloud.png" alt="">
+    <img class="deco d-diamond" src="diamond.png" alt="">
+    <img class="deco d-apple"   src="apple.png"   alt="">
+    <img class="deco d-torch"   src="torch.png"   alt="">
+    <img class="deco d-creeper" src="creeper.png" alt="">
+    <img class="deco d-coin"    src="gold_coin.png" alt="">
+
+    <h1 class="title">四則運算大冒險</h1>
+    <div class="tagline">數學小遊戲</div>
+    <div class="btns">
+      <button class="mc-btn start"   id="btn-start">
+        <img class="ic" src="play_icon.png" alt="">開始遊戲</button>
+      <button class="mc-btn settings" onclick="alert('⚙ 開啟設定')">
+        <img class="ic" src="gear_icon.png" alt="">設定</button>
+      <button class="mc-btn scores"  onclick="alert('🏆 查看成績')">
+        <img class="ic" src="gold_coin.png" alt="">查看成績</button>
+    </div>
+
+    <div class="ground"><div class="grass"></div><div class="dirt"></div></div>
+  </div>
+
+  <!-- ====== 戰鬥畫面 ====== -->
+  <div id="battle" class="screen battle hidden">
+    <button class="back" id="btn-back">❰ 返回主選單</button>
+    <div class="stage">
+      <div class="hp">
+        <span class="hp-label">怪物 HP</span>
+        <div class="hp-track"><div class="hp-fill"></div></div>
+      </div>
+      <div class="monster-slot">
+        <img class="monster-demo" src="monster_slime.png" alt="">
+        <span class="slot-label">怪物圖（預留位置）</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="qbox">
+        <div class="q-label">題目</div>
+        <div class="q-text">（題目預留位置）</div>
+      </div>
+      <div class="answers">
+        <button class="mc-btn"><span class="badge">A</span><span class="opt">（選項預留）</span></button>
+        <button class="mc-btn"><span class="badge">B</span><span class="opt">（選項預留）</span></button>
+        <button class="mc-btn"><span class="badge">C</span><span class="opt">（選項預留）</span></button>
+        <button class="mc-btn"><span class="badge">D</span><span class="opt">（選項預留）</span></button>
+      </div>
+      <div class="hp player-hp">
+        <span class="hp-label">玩家 HP</span>
+        <div class="hp-track"><div class="hp-fill player"></div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* ===== 音效引擎（Web Audio API 合成，自包含、無外部檔）===== */
+  const Sfx = {
+    ctx:null, muted:false,
+    init(){
+      if(!this.ctx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+      }
+      if(this.ctx.state === 'suspended') this.ctx.resume();
+    },
+    tone(freq, dur, type='square', vol=0.18, when=0){
+      if(this.muted) return;
+      this.init();
+      const t = this.ctx.currentTime + when;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(this.ctx.destination);
+      osc.start(t); osc.stop(t + dur + 0.03);
+    },
+    click(){ this.tone(420, 0.07, 'square', 0.14); },                       // 按鈕點擊
+    start(){ [523,659,784,1047].forEach((f,i)=>this.tone(f,0.18,'square',0.17,i*0.09)); }, // 進入戰鬥
+    select(){ this.tone(330, 0.09, 'triangle', 0.15); },                    // 選答案
+    correct(){ this.tone(659,0.12,'square',0.2); this.tone(988,0.24,'square',0.2,0.1); },  // 答對
+    wrong(){ this.tone(220,0.22,'sawtooth',0.2); this.tone(130,0.34,'sawtooth',0.2,0.12); } // 答錯
+  };
+
+  const menu = document.getElementById('menu');
+  const battle = document.getElementById('battle');
+  function show(target){
+    [menu, battle].forEach(s => s.classList.add('hidden'));
+    target.classList.remove('hidden');
+  }
+
+  // 全站按鈕：點擊聲（開始/設定/成績/返回 都用 click）
+  document.querySelectorAll('.mc-btn').forEach(b => {
+    b.addEventListener('click', () => Sfx.click());
+  });
+
+  document.getElementById('btn-start').addEventListener('click', () => {
+    Sfx.start();
+    show(battle);
+  });
+  document.getElementById('btn-back').addEventListener('click', () => show(menu));
+
+  // 答案選項：暫時播放選擇聲 + 提示（接題目邏輯時改這段）
+  document.querySelectorAll('.answers .mc-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      Sfx.select();
+      alert('（選項預留）接題目邏輯後，此處判定對錯並播音效');
+    });
+  });
+
+  // 靜音掣
+  const sToggle = document.getElementById('sound-toggle');
+  sToggle.addEventListener('click', () => {
+    Sfx.muted = !Sfx.muted;
+    sToggle.textContent = Sfx.muted ? '🔇' : '🔊';
+    if(!Sfx.muted) Sfx.click();
+  });
+</script>
+</body>
+</html>
