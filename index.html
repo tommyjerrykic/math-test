@@ -284,9 +284,9 @@
       <h2>設定</h2>
       <div class="sub">選擇題目難度（下一次開始遊戲生效）</div>
       <div class="diff-group" id="diff-group">
-        <button class="diff-btn" data-diff="easy">簡單<small>加、減（兩位數以內）</small></button>
-        <button class="diff-btn" data-diff="normal">普通<small>加、減、乘（含九九表）</small></button>
-        <button class="diff-btn" data-diff="hard">困難<small>加、減、乘、除（四則混合）</small></button>
+        <button class="diff-btn" data-diff="easy">簡單<small>加、減（2–4 個數混合）</small></button>
+        <button class="diff-btn" data-diff="normal">普通<small>加、減、乘（2–4 個數混合）</small></button>
+        <button class="diff-btn" data-diff="hard">困難<small>加、減、乘、除（2–4 個數混合）</small></button>
       </div>
       <div class="acts">
         <button class="mc-btn primary" id="btn-set-close">完成</button>
@@ -376,40 +376,73 @@
   }
   function makeQuestion(){
     const d = state.diff;
-    let op;
-    if(d==='easy'){
-      op = Math.random()<0.5 ? '+' : '-';
-    } else if(d==='normal'){
-      op = ['+','-','×'][Math.floor(Math.random()*3)];
-    } else { // 困難：偏重 × ÷
-      op = Math.random()<0.6 ? (Math.random()<0.5?'×':'÷') : (Math.random()<0.5?'+':'-');
+    const N = ri(2,4);                 // 運算元（數）個數：2、3 或 4
+    const allowMul = d!=='easy';
+    const allowDiv = d==='hard';
+    const valLim = d==='easy'?20 : (d==='hard'?99:50);
+    const mulLim = d==='easy'?9  : (d==='hard'?15:12);
+
+    // 生成「項」：每項是一個數，或（×、÷ 的）乘積／商
+    function genTerm(){
+      const r = Math.random();
+      if(allowDiv && r<0.30){            // x ÷ y（必整除）
+        const y = ri(2,9), x = y*ri(2,12);
+        return {text:`${x} ÷ ${y}`, value:x/y, ops:2};
+      }
+      if(allowMul && r<0.62){            // x × y
+        const x = ri(2,9), y = ri(2,mulLim);
+        return {text:`${x} × ${y}`, value:x*y, ops:2};
+      }
+      const v = ri(1,valLim);            // 單一數
+      return {text:`${v}`, value:v, ops:1};
     }
-    let a,b,ans,text;
-    if(op==='+'){
-      const lim = d==='easy'?20:(d==='hard'?99:50);
-      a=ri(1,lim); b=ri(1,lim); ans=a+b; text=`${a} + ${b}`;
-    } else if(op==='-'){
-      const lim = d==='easy'?20:(d==='hard'?99:50);
-      a=ri(1,lim); b=ri(0,a); ans=a-b; text=`${a} − ${b}`;
-    } else if(op==='×'){
-      const lim = d==='easy'?9:(d==='hard'?15:12);
-      a=ri(2,lim); b=ri(2,lim); ans=a*b; text=`${a} × ${b}`;
-    } else { // ÷ 整除
-      b=ri(2,9); const q=ri(2,12); a=b*q; ans=q; text=`${a} ÷ ${b}`;
+    function genCompound(){              // 必定是 × 或 ÷ 的項
+      if(allowDiv && Math.random()<0.5){
+        const y = ri(2,9), x = y*ri(2,12);
+        return {text:`${x} ÷ ${y}`, value:x/y, ops:2};
+      }
+      const x = ri(2,9), y = ri(2,mulLim);
+      return {text:`${x} × ${y}`, value:x*y, ops:2};
     }
-    return {text:text+' = ?', ans:ans};
+
+    const forceMix = (d!=='easy') && N>=3;   // 普通／困難的 3–4 數題必含 ×（或 ÷）
+    const terms=[]; let used=0, first=true, guard=0;
+    while(used<N && guard++<30){
+      let term;
+      const rem = N-used;
+      if(first && forceMix){ term=genCompound(); }
+      else if(rem===1 || (!allowMul && !allowDiv)){
+        const v=ri(1,valLim); term={text:`${v}`, value:v, ops:1};
+      } else {
+        term=genTerm();
+        if(term.ops>rem){ const v=ri(1,valLim); term={text:`${v}`, value:v, ops:1}; }
+      }
+      term.sign = first ? 1 : (Math.random()<0.5?1:-1);
+      terms.push(term); used+=term.ops; first=false;
+    }
+
+    // 先乘除後加減：每項先算好、再按正負號加總（與標準運算次序一致）
+    let total = terms.reduce((s,t)=> s + t.sign*t.value, 0);
+    if(total<0){ terms.forEach(t=> t.sign=-t.sign); total=-total; }   // 保證答案非負
+
+    const parts = terms.map((t,i)=>{
+      const body = (t.sign<0 && t.ops>1) ? `(${t.text})` : t.text;
+      if(i===0) return (t.sign<0 ? '− '+body : body);
+      return (t.sign<0 ? ' − ' : ' + ') + body;
+    });
+    return {text: parts.join('')+' = ?', ans: total};
   }
   function buildOptions(ans){
-    const set = new Set([ans]);
-    let tries=0;
-    while(set.size<4 && tries<60){
-      tries++;
-      const step = 1 + Math.floor(Math.random()*Math.max(6, Math.abs(ans)));
-      const d = ans + (Math.random()<0.5?-step:step);
-      if(d>=0 && !set.has(d)) set.add(d);
+    const set=new Set([ans]);
+    const base=Math.max(3, Math.round(Math.abs(ans)*0.12));
+    const cand=shuffle([1,-1,2,-2,3,-3,5,-5,10,-10,base,-base]);
+    let i=0;
+    while(set.size<4 && i<cand.length){
+      const dd=ans+cand[i++];
+      if(dd>=0 && Number.isInteger(dd) && !set.has(dd)) set.add(dd);
     }
     let k=1;
-    while(set.size<4){ const d=ans+k; if(d>=0) set.add(d); k++; }
+    while(set.size<4){ const dd=ans+k; if(dd>=0) set.add(dd); k++; }
     return shuffle([...set]);
   }
 
