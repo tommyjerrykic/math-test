@@ -547,6 +547,7 @@
   function show(target){
     [menu,battle].forEach(s=>s.classList.add('hidden'));
     target.classList.remove('hidden');
+    if(target===menu) stopTimer();   // 返回主選單立即停止計時，避免主界面出現「時間到」
   }
   function fmtTime(ms){
     const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
@@ -633,6 +634,7 @@
     renderHp(); renderProgress();
   }
   function newQuestion(){
+    if(battle.classList.contains('hidden')) return;   // 已離開戰鬥（如返回主選單）則不生成新題、不啟動計時
     state.locked=false;
     answerBtns.forEach(b=>{ b.disabled=false; b.classList.remove('ans-correct','ans-wrong'); });
     const q=makeQuestion(); state.currentAnswer=q.ans; state.asked++;
