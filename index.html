@@ -517,6 +517,25 @@
     .cloud{display:none;}
   }
 
+
+  /* ===== V2.5 老師參數面板樣式 ===== */
+  .overlay-settings .card{max-height:92vh;overflow-y:auto;}
+  .param-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;flex-wrap:wrap;}
+  .param-label{font-size:15px;font-weight:800;color:#fff;letter-spacing:.04em;min-width:60px;text-align:left;}
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stp{width:40px;height:40px;font-size:22px;font-weight:900;border:3px solid #16161a;border-radius:10px;cursor:pointer;color:#fff;background:#52525c;box-shadow:inset 3px 3px 0 rgba(255,255,255,.18),inset -3px -3px 0 rgba(0,0,0,.3);}
+  .stp:active{transform:translateY(2px);}
+  .stp-val{font-size:20px;font-weight:900;color:#ffd23f;min-width:34px;text-align:center;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;}
+  .seg button,.chips .chip{font-size:15px;font-weight:800;padding:9px 13px;border:3px solid #16161a;border-radius:9px;cursor:pointer;color:#fff;background:#52525c;box-shadow:inset 3px 3px 0 rgba(255,255,255,.18),inset -3px -3px 0 rgba(0,0,0,.3);transition:transform .05s,filter .05s;}
+  .seg button:active,.chips .chip:active{transform:translateY(2px);}
+  .seg button.on{background:#5b8bd0;outline:3px solid #ffd23f;outline-offset:1px;box-shadow:inset 3px 3px 0 #8fb6e6,inset -3px -3px 0 #3d629b;}
+  .chips .chip.on[data-op]{background:#78af6e;outline:3px solid #ffd23f;outline-offset:1px;box-shadow:inset 3px 3px 0 #a5d29b,inset -3px -3px 0 #50784b;}
+  .chips .chip.on#tg-paren,.chips .chip.on#tg-decimal,.chips .chip.on#tg-neg{background:#d8a93a;outline:3px solid #ffd23f;outline-offset:1px;box-shadow:inset 3px 3px 0 #f0cf72,inset -3px -3px 0 #a87f1f;}
+  .np-key.dot{display:none;}
+  .numpad.decimal .np-key.dot{display:block;}
+  .numpad.decimal .np-key[data-k="enter"]{grid-column:span 2;}
+
 </style>
 </head>
 <body>
@@ -606,6 +625,7 @@
           <button class="np-key" data-k="neg">±</button>
           <button class="np-key" data-k="0">0</button>
           <button class="np-key" data-k="del">⌫</button>
+          <button class="np-key dot" data-k="dot">.</button>
           <button class="np-key" data-k="enter">確認作答</button>
         </div>
       </div>
@@ -649,6 +669,34 @@
       <div class="sub" style="margin:2px 0 8px;">計時挑戰</div>
       <button class="toggle-btn" id="timed-toggle">計時挑戰：關閉</button>
       <div class="toggle-hint">開啟後每題限時作答，時間到即當答錯扣血。<br>簡單 15 秒／普通 20 秒／困難 30 秒。</div>
+
+      <div class="sub" style="margin:16px 0 6px;">題目設定（自定難度）</div>
+      <div class="param-row">
+        <span class="param-label">題數</span>
+        <div class="stepper">
+          <button class="stp" id="cnt-minus">−</button>
+          <span id="cnt-val" class="stp-val">35</span>
+          <button class="stp" id="cnt-plus">＋</button>
+        </div>
+      </div>
+      <div class="param-row">
+        <span class="param-label">數字上限</span>
+        <div class="seg" id="seg-max">
+          <button data-max="20">20</button><button data-max="50">50</button><button data-max="99">99</button><button data-max="999">999</button>
+        </div>
+      </div>
+      <div class="param-row">
+        <span class="param-label">運算符</span>
+        <div class="chips" id="chips-ops">
+          <button class="chip" data-op="add">＋</button><button class="chip" data-op="sub">－</button><button class="chip" data-op="mul">×</button><button class="chip" data-op="div">÷</button>
+        </div>
+      </div>
+      <div class="param-row">
+        <span class="param-label">進階</span>
+        <div class="chips">
+          <button class="chip" id="tg-paren">括號</button><button class="chip" id="tg-decimal">小數</button><button class="chip" id="tg-neg">負數</button>
+        </div>
+      </div>
       <div class="acts">
         <button class="mc-btn primary" id="btn-set-close">完成</button>
       </div>
@@ -738,6 +786,32 @@
   let best = {score:0, acc:0, wins:0, maxCombo:0};
   try{ const b = localStorage.getItem('mcMathBest'); if(b) best = JSON.parse(b); }catch(e){}
 
+  /* ===== 老師參數（自定題目）===== */
+  const PRESETS = {
+    easy:   {count:35, maxNum:20,  ops:{add:1,sub:1,mul:0,div:0}, paren:0, decimal:0, neg:0},
+    normal: {count:35, maxNum:50,  ops:{add:1,sub:1,mul:1,div:0}, paren:0, decimal:0, neg:0},
+    hard:   {count:35, maxNum:99,  ops:{add:1,sub:1,mul:1,div:1}, paren:0, decimal:0, neg:0}
+  };
+  const DEFAULT_PARAMS = {count:35, maxNum:50, ops:{add:true,sub:true,mul:false,div:false}, paren:false, decimal:false, neg:false};
+  let params = JSON.parse(JSON.stringify(DEFAULT_PARAMS));
+  try{ const s=localStorage.getItem('mcMathParams'); if(s){ const o=JSON.parse(s); Object.assign(params,o); params.ops=Object.assign({},DEFAULT_PARAMS.ops,o.ops||{}); } }catch(e){}
+  function saveParams(){ try{ localStorage.setItem('mcMathParams', JSON.stringify(params)); }catch(e){} }
+  function applyCount(n){
+    n=Math.max(10,Math.min(60,n)); params.count=n;
+    const boss=Math.max(2,Math.round(n*0.3));
+    const rest=Math.max(0,n-boss), each=Math.floor(rest/4); let rem=rest-each*4;
+    MONSTERS.forEach(m=>{ if(m.boss) m.hp=boss; else { m.hp=each+(rem>0?1:0); rem--; } });
+  }
+  applyCount(params.count);
+  function refreshParamsUI(){
+    const cv=$('cnt-val'); if(cv) cv.textContent=params.count;
+    document.querySelectorAll('#seg-max button').forEach(b=> b.classList.toggle('on', +b.dataset.max===params.maxNum));
+    document.querySelectorAll('#chips-ops .chip').forEach(b=> b.classList.toggle('on', !!params.ops[b.dataset.op]));
+    const tp=$('tg-paren'); if(tp) tp.classList.toggle('on', params.paren);
+    const td=$('tg-decimal'); if(td) td.classList.toggle('on', params.decimal);
+    const tn=$('tg-neg'); if(tn) tn.classList.toggle('on', params.neg);
+  }
+
   /* ===== 題目生成 ===== */
   function ri(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
   function shuffle(arr){
@@ -745,62 +819,55 @@
     return arr;
   }
   function makeQuestion(){
-    const d = state.diff;
-    const N = ri(2,4);                 // 運算元（數）個數：2、3 或 4
-    const allowMul = d!=='easy';
-    const allowDiv = d==='hard';
-    const valLim = d==='easy'?20 : (d==='hard'?99:50);
-    const mulLim = d==='easy'?9  : (d==='hard'?15:12);
+    const p = params;
+    let allowAdd=!!p.ops.add, allowSub=!!p.ops.sub, allowMul=!!p.ops.mul, allowDiv=!!p.ops.div;
+    if(!(allowAdd||allowSub||allowMul||allowDiv)) allowAdd=true;   // 至少保留加法
+    const valLim = p.maxNum;
+    const mulLim = Math.max(9, Math.min(15, Math.floor(valLim/4)));
+    const deci = !!p.decimal, neg = !!p.neg, paren = !!p.paren;
 
-    // 生成「項」：每項是一個數，或（×、÷ 的）乘積／商
+    function rv(lim){   // 隨機運算元（小數模式可能含 1 位小數）
+      if(deci && Math.random()<0.5) return Math.round(ri(1, lim*10))/10;
+      return ri(1, lim);
+    }
+    function fmt(v){ return (Math.round(v*10)/10).toString(); }
     function genTerm(){
       const r = Math.random();
-      if(allowDiv && r<0.30){            // x ÷ y（必整除）
-        const y = ri(2,9), x = y*ri(2,12);
-        return {text:`${x} ÷ ${y}`, value:x/y, ops:2};
-      }
-      if(allowMul && r<0.62){            // x × y
-        const x = ri(2,9), y = ri(2,mulLim);
-        return {text:`${x} × ${y}`, value:x*y, ops:2};
-      }
-      const v = ri(1,valLim);            // 單一數
-      return {text:`${v}`, value:v, ops:1};
+      if(allowDiv && r<0.30){ const y=ri(2,9), x=y*ri(2,12); return {text:`${x} ÷ ${y}`, value:x/y, ops:2}; }
+      if(allowMul && r<0.62){ const x=ri(2,9), y=ri(2,mulLim); return {text:`${x} × ${y}`, value:x*y, ops:2}; }
+      const v=rv(valLim); return {text:fmt(v), value:v, ops:1};
     }
-    function genCompound(){              // 必定是 × 或 ÷ 的項
-      if(allowDiv && Math.random()<0.5){
-        const y = ri(2,9), x = y*ri(2,12);
-        return {text:`${x} ÷ ${y}`, value:x/y, ops:2};
-      }
-      const x = ri(2,9), y = ri(2,mulLim);
-      return {text:`${x} × ${y}`, value:x*y, ops:2};
+    function genCompound(){
+      if(allowDiv && Math.random()<0.5){ const y=ri(2,9), x=y*ri(2,12); return {text:`${x} ÷ ${y}`, value:x/y, ops:2}; }
+      const x=ri(2,9), y=ri(2,mulLim); return {text:`${x} × ${y}`, value:x*y, ops:2};
     }
 
-    const forceMix = (d!=='easy') && N>=3;   // 普通／困難的 3–4 數題必含 ×（或 ÷）
+    const N = ri(2,4);                 // 運算元（數）個數：2、3 或 4
+    const forceMix = (allowMul||allowDiv) && N>=3;
     const terms=[]; let used=0, first=true, guard=0;
     while(used<N && guard++<30){
-      let term;
-      const rem = N-used;
+      let term; const rem=N-used;
       if(first && forceMix){ term=genCompound(); }
       else if(rem===1 || (!allowMul && !allowDiv)){
-        const v=ri(1,valLim); term={text:`${v}`, value:v, ops:1};
+        const v=rv(valLim); term={text:fmt(v), value:v, ops:1};
       } else {
         term=genTerm();
-        if(term.ops>rem){ const v=ri(1,valLim); term={text:`${v}`, value:v, ops:1}; }
+        if(term.ops>rem){ const v=rv(valLim); term={text:fmt(v), value:v, ops:1}; }
       }
       term.sign = first ? 1 : (Math.random()<0.5?1:-1);
       terms.push(term); used+=term.ops; first=false;
     }
 
-    // 先乘除後加減：每項先算好、再按正負號加總（與標準運算次序一致）
     let total = terms.reduce((s,t)=> s + t.sign*t.value, 0);
-    if(total<0){ terms.forEach(t=> t.sign=-t.sign); total=-total; }   // 保證答案非負
+    if(!neg && total<0){ terms.forEach(t=> t.sign=-t.sign); total=-total; }   // 關閉負數時保證答案非負
 
     const parts = terms.map((t,i)=>{
-      const body = (t.sign<0 && t.ops>1) ? `(${t.text})` : t.text;
+      let body = t.text;
+      if(paren && t.sign<0 && t.ops>1) body = `(${t.text})`;
       if(i===0) return (t.sign<0 ? '− '+body : body);
       return (t.sign<0 ? ' − ' : ' + ') + body;
     });
-    return {text: parts.join('')+' = ?', ans: total};
+    return {text: parts.join('')+' = ?', ans: Math.round(total*10)/10};
   }
 
   /* ===== DOM ===== */
@@ -815,7 +882,7 @@
   const timerBar=$('timer-bar'), timerFill=$('timer-fill'), timerBadge=$('timer-badge');
 
   function refreshDiff(){
-    const map={easy:'簡單',normal:'普通',hard:'困難'};
+    const map={easy:'簡單',normal:'普通',hard:'困難',custom:'自定'};
     $('diff-now').textContent='難度：'+map[state.diff];
   }
   refreshDiff();
@@ -934,6 +1001,8 @@
     startTimer();
   }
   function startBattle(){
+    applyCount(params.count);
+    numpad.classList.toggle('decimal', params.decimal);
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
     state.combo=0; state.maxCombo=0; state.startTime=Date.now();
     hud.textContent='得分 0'; showCombo();
@@ -1032,17 +1101,21 @@
       inputStr = inputStr.startsWith('-') ? inputStr.slice(1) : (inputStr==='' ? '-' : '-'+inputStr);
       renderInput(); Sfx.select(); return;
     }
+    if(k==='dot'){
+      if(inputStr==='' || inputStr==='-' || inputStr.includes('.')) return;
+      inputStr += '.'; renderInput(); Sfx.select(); return;
+    }
     if(k==='enter'){ onSubmit(); return; }
   }
   function onSubmit(){
     if(state.locked) return;
-    if(inputStr==='' || inputStr==='-'){            // 未輸入：提示一下，不消耗時間
+    if(inputStr==='' || inputStr==='-' || inputStr.endsWith('.')){   // 未輸入或只輸入符號/小數點：提示，不消耗時間
       answerDisplay.classList.remove('flash-err'); void answerDisplay.offsetWidth; answerDisplay.classList.add('flash-err');
       return;
     }
     const remain = timerRemain;
     stopTimer();
-    const val = parseInt(inputStr,10);
+    const val = parseFloat(inputStr);
     if(isNaN(val)) return;
     state.locked=true;
     numpad.classList.add('disabled');
@@ -1086,6 +1159,7 @@
     else if(e.key==='Backspace'){ e.preventDefault(); pressKey('del'); }
     else if(e.key==='Enter'){ e.preventDefault(); pressKey('enter'); }
     else if(e.key==='-'||e.key==='±'){ pressKey('neg'); }
+    else if(e.key==='.'){ pressKey('dot'); }
   });
 
   function spawnConfetti(win){
@@ -1135,7 +1209,7 @@
   $('btn-settings').addEventListener('click', ()=>{
     stopTimer();   // 遊戲中打開設定先暫停計時
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.toggle('sel', x.dataset.diff===state.diff));
-    refreshDiff(); refreshTimed();
+    refreshDiff(); refreshTimed(); refreshParamsUI();
     $('overlay-settings').classList.remove('hidden');
   });
   $('btn-scores').addEventListener('click', ()=>{
@@ -1149,8 +1223,9 @@
   document.querySelectorAll('.diff-btn').forEach(x=> x.addEventListener('click',()=>{
     state.diff=x.dataset.diff;
     try{ localStorage.setItem('mcMathDiff', state.diff); }catch(e){}
+    if(PRESETS[state.diff]){ const pr=PRESETS[state.diff]; params.count=pr.count; params.maxNum=pr.maxNum; params.ops={add:!!pr.ops.add,sub:!!pr.ops.sub,mul:!!pr.ops.mul,div:!!pr.ops.div}; params.paren=!!pr.paren; params.decimal=!!pr.decimal; params.neg=!!pr.neg; saveParams(); }
     document.querySelectorAll('.diff-btn').forEach(o=>o.classList.toggle('sel', o===x));
-    refreshDiff();
+    refreshDiff(); refreshParamsUI();
   }));
   $('btn-set-close').addEventListener('click', ()=>{
     $('overlay-settings').classList.add('hidden');
@@ -1167,6 +1242,22 @@
     refreshTimed();
   });
   refreshTimed();   // 頁面載入時同步開關顯示（讀自 localStorage）
+
+  /* 老師參數面板：綁定控制項 */
+  function setCustom(){ state.diff='custom'; try{localStorage.setItem('mcMathDiff','custom');}catch(e){} document.querySelectorAll('.diff-btn').forEach(o=>o.classList.remove('sel')); refreshDiff(); }
+  $('cnt-minus').addEventListener('click', ()=>{ applyCount(params.count-5); saveParams(); refreshParamsUI(); });
+  $('cnt-plus').addEventListener('click',  ()=>{ applyCount(params.count+5); saveParams(); refreshParamsUI(); });
+  document.querySelectorAll('#seg-max button').forEach(b=> b.addEventListener('click', ()=>{ params.maxNum=+b.dataset.max; saveParams(); refreshParamsUI(); setCustom(); }));
+  document.querySelectorAll('#chips-ops .chip').forEach(b=> b.addEventListener('click', ()=>{
+    const op=b.dataset.op; params.ops[op]=!params.ops[op];
+    const any = params.ops.add||params.ops.sub||params.ops.mul||params.ops.div;
+    if(!any){ params.ops.add=true; }   // 至少保留加法
+    saveParams(); refreshParamsUI(); setCustom();
+  }));
+  $('tg-paren').addEventListener('click', ()=>{ params.paren=!params.paren; saveParams(); refreshParamsUI(); setCustom(); });
+  $('tg-decimal').addEventListener('click', ()=>{ params.decimal=!params.decimal; numpad.classList.toggle('decimal', params.decimal); saveParams(); refreshParamsUI(); setCustom(); });
+  $('tg-neg').addEventListener('click', ()=>{ params.neg=!params.neg; saveParams(); refreshParamsUI(); setCustom(); });
+  refreshParamsUI();
   $('btn-score-close').addEventListener('click', ()=>{
     $('overlay-scores').classList.add('hidden');
     if(!battle.classList.contains('hidden')) startTimer();   // 仍在戰鬥則恢復計時
