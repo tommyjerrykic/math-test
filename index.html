@@ -95,6 +95,29 @@
   .monster-demo.hit{animation:shake .4s;}
   @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-12px);}75%{transform:translateX(12px);}}
 
+  /* 怪物待機動畫外層（與受擊/撲擊分層，互不干擾） */
+  .monster-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%;will-change:transform;}
+  /* 史萊姆：彈跳 squash & stretch */
+  .monster-slot.m-slime .monster-inner{animation:slime-bounce 1.5s ease-in-out infinite;}
+  @keyframes slime-bounce{0%,100%{transform:translateY(0) scaleY(1) scaleX(1);}
+    30%{transform:translateY(9px) scaleY(.8) scaleX(1.1);}
+    55%{transform:translateY(-20px) scaleY(1.08) scaleX(.95);}
+    75%{transform:translateY(0) scaleY(.96) scaleX(1.02);}}
+  /* 殭屍：緩慢左右搖晃（行屍） */
+  .monster-slot.m-zombie .monster-inner{animation:zombie-sway 2.4s ease-in-out infinite;}
+  @keyframes zombie-sway{0%,100%{transform:rotate(-5deg) translateX(-4px);}50%{transform:rotate(5deg) translateX(4px);}}
+  /* 蜘蛛：左右快速小步爬動 */
+  .monster-slot.m-spider .monster-inner{animation:spider-crawl 1.9s ease-in-out infinite;}
+  @keyframes spider-crawl{0%,100%{transform:translateX(-16px) translateY(0);}50%{transform:translateX(16px) translateY(-5px);}}
+  /* 骷髏：詭異上下浮 + 輕微抖動 */
+  .monster-slot.m-skeleton .monster-inner{animation:skeleton-float 2.8s ease-in-out infinite;}
+  @keyframes skeleton-float{0%,100%{transform:translateY(0) rotate(0);}
+    25%{transform:translateY(-12px) rotate(2deg);}50%{transform:translateY(-3px) rotate(-2deg);}
+    75%{transform:translateY(-14px) rotate(3deg);}}
+  /* 大魔王龍：懸浮呼吸（boss 本已放大紅框） */
+  .monster-slot.m-dragon .monster-inner{animation:dragon-hover 3.2s ease-in-out infinite;}
+  @keyframes dragon-hover{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-18px) scale(1.04);}}
+
   /* 玩家攻擊：斬擊特效 */
   .slash{position:absolute;top:50%;left:50%;width:130%;height:14px;z-index:6;
     transform:translate(-50%,-50%) rotate(-32deg) scaleX(0);transform-origin:center;
@@ -304,7 +327,9 @@
         <div class="hp-track"><div class="hp-fill" id="monster-hp"></div></div>
       </div>
       <div class="monster-slot" id="monster-slot">
-        <img class="monster-demo" id="monster-img" src="monster_slime.png" alt="">
+        <div class="monster-inner" id="monster-inner">
+          <img class="monster-demo" id="monster-img" src="monster_slime.png" alt="">
+        </div>
         <div class="slash" id="slash"></div>
         <span class="slot-label" id="monster-name">史萊姆</span>
       </div>
@@ -431,11 +456,11 @@
 
   /* ===== 遊戲數據 ===== */
   const MONSTERS = [
-    {name:'史萊姆',    img:'monster_slime.png',     hp:6, boss:false},
-    {name:'殭屍',      img:'monster_zombie.png',     hp:6, boss:false},
-    {name:'蜘蛛',      img:'monster_spider.png',     hp:6, boss:false},
-    {name:'骷髏',      img:'monster_skeleton.png',   hp:6, boss:false},
-    {name:'大魔王龍',  img:'monster_dragon.png',     hp:11, boss:true}
+    {name:'史萊姆',    img:'monster_slime.png',     hp:6, boss:false, cls:'m-slime'},
+    {name:'殭屍',      img:'monster_zombie.png',     hp:6, boss:false, cls:'m-zombie'},
+    {name:'蜘蛛',      img:'monster_spider.png',     hp:6, boss:false, cls:'m-spider'},
+    {name:'骷髏',      img:'monster_skeleton.png',   hp:6, boss:false, cls:'m-skeleton'},
+    {name:'大魔王龍',  img:'monster_dragon.png',     hp:11, boss:true, cls:'m-dragon'}
   ];
   const PLAYER_MAX_HP = 5;
   const SCORE_PER = 10;
@@ -638,9 +663,12 @@
   function loadMonster(){
     const m=MONSTERS[state.mIdx];
     state.mHp=m.hp;
+    // 切換怪物專屬待機動畫 class（先移除其他 m-*，避免殘留）
+    monsterSlot.classList.remove('boss','m-slime','m-zombie','m-spider','m-skeleton','m-dragon');
+    monsterSlot.classList.add(m.cls);
+    if(m.boss) monsterSlot.classList.add('boss');   // Boss 怪物紅框+放大
     monsterImg.src=m.img; monsterName.textContent=m.name;
     renderHp(); renderProgress();
-    monsterSlot.classList.toggle('boss', m.boss);   // Boss 怪物紅框+放大
   }
   function newQuestion(){
     if(battle.classList.contains('hidden')) return;   // 已離開戰鬥（如返回主選單）則不生成新題、不啟動計時
