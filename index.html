@@ -165,6 +165,18 @@
     position:sticky;bottom:0;z-index:4;background:#26262c;
     border-top:1px solid rgba(0,0,0,.4);}
 
+  /* 題目框內連擊徽章（答題途中常駐顯示） */
+  .q-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .combo-badge{font-size:17px;font-weight:900;color:#8a8a8a;
+    background:rgba(0,0,0,.28);border:2px solid #000;border-radius:8px;
+    padding:4px 12px;letter-spacing:.04em;white-space:nowrap;
+    text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;
+    transition:color .18s ease,transform .18s ease,background .18s ease;
+    opacity:.7;}
+  .combo-badge.show{opacity:1;color:#ffd23f;background:rgba(0,0,0,.45);}
+  .combo-badge.pop{animation:pop-badge .45s ease;}
+  @keyframes pop-badge{0%{transform:scale(1);}35%{transform:scale(1.22);}100%{transform:scale(1);}}
+
   /* HUD：分數 */
   .hud{position:absolute;top:14px;right:70px;z-index:5;font-size:15px;font-weight:800;
     color:#ffd23f;background:rgba(0,0,0,.45);border:2px solid #000;border-radius:6px;
@@ -259,7 +271,6 @@
   <div id="battle" class="screen battle hidden">
     <button class="back" id="btn-back">❰ 返回主選單</button>
     <div class="hud" id="hud">得分 0</div>
-    <div class="combo" id="combo"></div>
     <div class="stage">
       <div class="progress" id="progress"></div>
       <div class="hp">
@@ -275,7 +286,10 @@
 
     <div class="panel">
       <div class="qbox">
-        <div class="q-label">題目</div>
+        <div class="q-head">
+          <div class="q-label">題目</div>
+          <div class="combo-badge" id="combo">連擊 ×0</div>
+        </div>
         <div class="q-text" id="q-text">準備中…</div>
       </div>
       <div class="answers" id="answers">
@@ -554,7 +568,7 @@
   function startBattle(){
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
     state.combo=0; state.maxCombo=0; state.startTime=Date.now();
-    hud.textContent='得分 0'; comboEl.classList.remove('show','pop');
+    hud.textContent='得分 0'; showCombo();
     loadMonster(); newQuestion();
   }
 
@@ -605,7 +619,7 @@
         newQuestion();
       }, 850);
     } else {
-      state.combo=0; comboEl.classList.remove('show','pop');
+      state.combo=0; showCombo();
       state.pHp--; renderHp(); Sfx.wrong(); showToast('答錯！');
       monsterCounter();
       setTimeout(()=>{
