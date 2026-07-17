@@ -427,6 +427,77 @@
   .hp-fill{position:relative;overflow:hidden;}
   .hp-fill::after{content:'';position:absolute;left:0;right:0;top:0;height:42%;
     background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0));pointer-events:none;}
+
+  /* ============================================================
+     V2.4 手機 / 窄屏 responsive 適配
+     - 豎屏手機 (<=560px)：收縮按鈕/字體/鍵盤，收起主選單裝飾避免遮擋
+     - 極窄手機 (<=360px)：按鈕改 92vw 不溢出
+     - 橫屏 / 矮屏 (max-height:520px)：優先收縮高度，monster 與 numpad 縮細 fit
+     ============================================================ */
+  /* ---------- 豎屏手機 ---------- */
+  @media (max-width:560px){
+    .menu{gap:20px;padding:0 12px;}
+    .menu .mc-btn{min-width:min(300px,88vw);font-size:20px;padding:13px 26px 13px 16px;}
+    .menu .mc-btn .ic{width:30px;height:30px;}
+    .title{font-size:clamp(30px,9vw,56px);}
+    .tagline{font-size:13px;}
+    .diff-now{font-size:13px;}
+    .monster-slot{width:min(66vw,300px,40vh);}
+    .stage{gap:10px;padding:10px 10px 12px;}
+    .hp{width:min(92%,400px);}
+    .hp-label{font-size:13px;min-width:58px;}
+    .panel{padding:14px clamp(10px,4vw,24px) 16px;gap:12px;}
+    .qbox{padding:12px 14px;}
+    .q-text{font-size:clamp(20px,6vw,32px);}
+    .q-label{font-size:12px;}
+    .answer-display{min-height:58px;font-size:clamp(26px,8vw,38px);padding:0 14px;}
+    .answer-display.empty::before{font-size:17px;}
+    .numpad{gap:9px;}
+    .np-key{min-height:58px;font-size:clamp(19px,6vw,26px);}
+    .np-key[data-k="enter"]{font-size:clamp(18px,5vw,24px);}
+    .combo-badge,.timer-badge{font-size:15px;padding:4px 10px;}
+    .hud{right:64px;font-size:14px;padding:7px 12px;}
+    .sound-toggle{width:42px;height:42px;font-size:20px;}
+    .card{padding:22px 18px;max-width:min(440px,94vw);}
+    .card h2{font-size:25px;}
+    .card .sub{font-size:13px;}
+    .card .row{font-size:15px;padding:9px 12px;}
+    .card .mc-btn{font-size:17px;padding:12px 18px;min-width:min(150px,42vw);}
+    .diff-btn{font-size:18px;padding:14px;}
+    .toggle-btn{font-size:17px;padding:13px;}
+    .toast{font-size:28px;}
+    .ground{height:120px;}
+    .grass{height:68px;background-size:68px 68px;}
+    .dirt{height:52px;background-size:68px 68px;}
+    .deco{opacity:.4;}
+    .cloud{opacity:.45;}
+    .scene-hills.far{height:90px;bottom:64px;}
+    .scene-hills.near{height:110px;bottom:50px;}
+  }
+  /* ---------- 極窄手機 (iPhone SE 等 320px) ---------- */
+  @media (max-width:360px){
+    .menu .mc-btn{min-width:92vw;font-size:18px;}
+    .monster-slot{width:min(72vw,260px,38vh);}
+    .numpad{gap:7px;}
+    .np-key{min-height:52px;}
+    .card .mc-btn{min-width:40vw;}
+  }
+  /* ---------- 手機橫屏 / 矮屏：高度優先收縮 ---------- */
+  @media (max-height:520px){
+    .stage{gap:6px;padding:8px 10px 8px;}
+    .monster-slot{width:min(40vw,200px,34vh);}
+    .panel{gap:8px;padding:10px 16px 12px;}
+    .numpad{gap:6px;}
+    .np-key{min-height:46px;font-size:clamp(17px,5vw,22px);}
+    .qbox{padding:9px 12px;}
+    .q-text{font-size:clamp(18px,4.4vw,26px);}
+    .ground{height:90px;}
+    .grass{height:52px;background-size:52px 52px;}
+    .dirt{height:38px;background-size:52px 52px;}
+    .deco{display:none;}
+    .cloud{display:none;}
+  }
+
 </style>
 </head>
 <body>
