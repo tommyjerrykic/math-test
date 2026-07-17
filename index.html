@@ -89,8 +89,8 @@
   .progress .dot.cur{background:#ffd23f;box-shadow:0 0 0 3px rgba(255,210,63,.4);}
 
   .monster-slot{position:relative;width:min(44vw,330px);aspect-ratio:1;overflow:visible;
-    display:flex;align-items:center;justify-content:center;
-    border:3px dashed rgba(255,255,255,.7);border-radius:16px;background:rgba(255,255,255,.12);}
+    display:flex;align-items:center;justify-content:center;border-radius:16px;
+    transition:transform .3s ease;}
   .monster-demo{width:74%;image-rendering:pixelated;filter:drop-shadow(0 10px 10px rgba(0,0,0,.18));}
   .monster-demo.hit{animation:shake .4s;}
   @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-12px);}75%{transform:translateX(12px);}}
@@ -307,6 +307,79 @@
   .toast.show{opacity:1;animation:pop .7s ease;}
   @keyframes pop{0%{transform:translateX(-50%) scale(.4);}40%{transform:translateX(-50%) scale(1.15);}
     100%{transform:translateX(-50%) scale(1);}}
+
+  /* ===== 戰鬥場景背景（V2.1 美化）===== */
+  .stage{position:relative;isolation:isolate;overflow:hidden;}
+  .stage > .progress, .stage > .hp, .stage > .monster-slot{position:relative;z-index:1;}
+  .scene{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .scene-sky{position:absolute;inset:0;
+    background:
+      radial-gradient(120% 80% at 50% 14%, rgba(255,255,255,.45), rgba(255,255,255,0) 58%),
+      linear-gradient(180deg,#aee4ff 0%,#cdeeff 52%,#eafaff 100%);}
+  .scene-hills{position:absolute;left:-5%;right:-5%;background-repeat:no-repeat;image-rendering:pixelated;}
+  .scene-hills.far{height:120px;bottom:80px;opacity:.5;
+    background:linear-gradient(180deg,transparent 30%,#7cc0b2 30% 100%);
+    clip-path:polygon(0 100%,0 56%,8% 42%,16% 60%,26% 32%,38% 58%,48% 36%,60% 60%,72% 38%,84% 58%,94% 40%,100% 54%,100% 100%);}
+  .scene-hills.near{height:150px;bottom:64px;opacity:.85;
+    background:linear-gradient(180deg,transparent 38%,#4f9e7e 38% 100%);
+    clip-path:polygon(0 100%,0 62%,10% 48%,20% 66%,30% 42%,42% 64%,54% 44%,66% 66%,78% 46%,90% 64%,100% 52%,100% 100%);}
+  .scene-ground{position:absolute;left:0;right:0;bottom:0;height:84px;
+    background:url(grass_block.png) repeat-x;background-size:84px 84px;
+    box-shadow:inset 0 8px 14px rgba(0,0,0,.18);}
+  .scene-ground::after{content:'';position:absolute;left:0;right:0;top:84px;height:40px;
+    background:url(dirt_block.png) repeat-x;background-size:84px 84px;opacity:.92;}
+  .scene-clouds{position:absolute;inset:0;}
+  .scene-clouds .sc{position:absolute;width:130px;height:64px;opacity:.85;
+    background:url(cloud.png) no-repeat center/contain;image-rendering:pixelated;
+    filter:drop-shadow(0 4px 0 rgba(0,0,0,.05));}
+  .sc1{top:9%;left:-150px;animation:scdrift 48s linear infinite;}
+  .sc2{top:22%;left:-150px;animation:scdrift 64s linear infinite 12s;}
+  @keyframes scdrift{from{transform:translateX(0);}to{transform:translateX(125vw);}}
+  .embers{position:absolute;inset:0;}
+  .ember{position:absolute;bottom:-12px;border-radius:50%;
+    background:rgba(255,230,150,.9);box-shadow:0 0 6px rgba(255,220,120,.85);opacity:0;
+    animation:emberRise linear infinite;}
+  @keyframes emberRise{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    12%{opacity:.9;}
+    88%{opacity:.6;}
+    100%{transform:translateY(-62vh) translateX(22px);opacity:0;}}
+
+  /* 怪物競技場：光暈 + 旋轉符文環 */
+  .monster-slot{z-index:1;}
+  .arena-glow{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+    width:80%;height:80%;border-radius:50%;z-index:0;pointer-events:none;
+    background:radial-gradient(circle at center, rgba(150,215,255,.6), rgba(150,215,255,0) 70%);
+    filter:blur(7px);opacity:.85;transition:background .3s,opacity .3s;}
+  .monster-slot.boss .arena-glow{background:radial-gradient(circle at center, rgba(255,95,95,.62), rgba(255,95,95,0) 70%);}
+  .arena-ring{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);
+    width:86%;height:44%;border-radius:50%;z-index:0;pointer-events:none;
+    border:3px dashed rgba(255,255,255,.55);opacity:.5;animation:ringSpin 16s linear infinite;}
+  .monster-slot.boss .arena-ring{border-color:rgba(255,120,120,.8);animation-duration:9s;}
+  @keyframes ringSpin{from{transform:translate(-50%,-50%) rotate(0);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+  .monster-slot.flash .arena-glow{opacity:1;background:radial-gradient(circle at center, rgba(255,255,180,.95), rgba(255,255,180,0) 70%);}
+
+  /* 入場 / 退場動畫 */
+  .monster-slot.entering{animation:slotEnter .66s cubic-bezier(.2,1.3,.4,1);}
+  @keyframes slotEnter{
+    0%{transform:translateY(-34px) scale(.3);opacity:0;}
+    60%{transform:translateY(0) scale(1.1);opacity:1;}
+    100%{transform:translateY(0) scale(1);opacity:1;}}
+  .monster-slot.defeated .monster-inner{animation:monsterDefeat .55s ease forwards;}
+  @keyframes monsterDefeat{0%{transform:scale(1) rotate(0);opacity:1;}100%{transform:scale(.1) rotate(45deg);opacity:0;}}
+
+  /* 斬擊強化光澤 */
+  .slash{background:linear-gradient(90deg,transparent,#fff 42%,#c7f6ff 56%,transparent);
+    filter:drop-shadow(0 0 12px #9ef);box-shadow:0 0 18px rgba(150,238,255,.6);border-radius:10px;}
+
+  /* 粒子 */
+  .particle{position:absolute;z-index:8;pointer-events:none;border-radius:2px;
+    image-rendering:pixelated;box-shadow:0 0 7px rgba(255,255,255,.55);will-change:transform,opacity;}
+
+  /* 血條微光澤（像素感）*/
+  .hp-fill{position:relative;overflow:hidden;}
+  .hp-fill::after{content:'';position:absolute;left:0;right:0;top:0;height:42%;
+    background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0));pointer-events:none;}
 </style>
 </head>
 <body>
@@ -344,12 +417,22 @@
     <button class="back" id="btn-back">❰ 返回主選單</button>
     <div class="hud" id="hud">得分 0</div>
     <div class="stage">
+      <div class="scene" aria-hidden="true">
+        <div class="scene-sky"></div>
+        <div class="scene-hills far"></div>
+        <div class="scene-hills near"></div>
+        <div class="scene-clouds"><span class="sc sc1"></span><span class="sc sc2"></span></div>
+        <div class="scene-ground"></div>
+        <div class="embers" id="embers"></div>
+      </div>
       <div class="progress" id="progress"></div>
       <div class="hp">
         <span class="hp-label">怪物 HP</span>
         <div class="hp-track"><div class="hp-fill" id="monster-hp"></div></div>
       </div>
       <div class="monster-slot" id="monster-slot">
+        <div class="arena-glow"></div>
+        <div class="arena-ring"></div>
         <div class="monster-shadow"></div>
         <div class="monster-inner" id="monster-inner">
           <img class="monster-demo" id="monster-img" src="monster_slime.png" alt="">
@@ -688,11 +771,19 @@
     const m=MONSTERS[state.mIdx];
     state.mHp=m.hp;
     // 切換怪物專屬待機動畫 class（先移除其他 m-*，避免殘留）
-    monsterSlot.classList.remove('boss','m-slime','m-zombie','m-spider','m-skeleton','m-dragon');
+    monsterSlot.classList.remove('boss','m-slime','m-zombie','m-spider','m-skeleton','m-dragon','defeated','entering');
     monsterSlot.classList.add(m.cls);
     if(m.boss) monsterSlot.classList.add('boss');   // Boss 怪物紅框+放大
     monsterImg.src=m.img; monsterName.textContent=m.name;
     renderHp(); renderProgress();
+    // 入場動畫：從上方彈入 + 光暈閃現
+    void monsterSlot.offsetWidth;
+    monsterSlot.classList.add('entering');
+    setTimeout(()=>monsterSlot.classList.remove('entering'),700);
+  }
+  function defeatMonster(){
+    spawnDefeat();
+    monsterSlot.classList.add('defeated');
   }
   function newQuestion(){
     if(battle.classList.contains('hidden')) return;   // 已離開戰鬥（如返回主選單）則不生成新題、不啟動計時
@@ -708,6 +799,7 @@
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
     state.combo=0; state.maxCombo=0; state.startTime=Date.now();
     hud.textContent='得分 0'; showCombo();
+    spawnEmbers();
     loadMonster(); newQuestion();
   }
 
@@ -720,11 +812,69 @@
     replay(slashEl,'go');
     replay(monsterImg,'hit');
     replay(monsterSlot,'flash');
+    spawnHit();
+    if(state.combo>=3) spawnCombo();
     setTimeout(()=>monsterSlot.classList.remove('flash'),300);
   }
   function monsterCounter(){        // 答錯：怪物撲擊 → 全屏紅閃 + 血條抖動
     replay(monsterImg,'attack');
-    setTimeout(()=>{ Sfx.counter(); replay(hurtFlash,'go'); replay(playerHpBox,'shake-hp'); },160);
+    setTimeout(()=>{ Sfx.counter(); replay(hurtFlash,'go'); replay(playerHpBox,'shake-hp'); spawnSplat(); },160);
+  }
+
+  /* ===== 粒子特效（Web Animations API，自包含、無外部檔）===== */
+  function burst(cx, cy, opts){
+    opts = opts || {};
+    const n = opts.count || 12;
+    const colors = opts.colors || ['#ffd23f','#ffffff','#ffae42'];
+    const spd = opts.speed || 120;
+    const layer = battle;
+    for(let i=0;i<n;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.background = colors[i % colors.length];
+      p.style.left = cx+'px'; p.style.top = cy+'px';
+      const sz = opts.size || (6 + Math.random()*6);
+      p.style.width = sz+'px'; p.style.height = sz+'px';
+      layer.appendChild(p);
+      const ang = Math.random()*Math.PI*2;
+      const v = spd*(0.4 + Math.random()*0.9);
+      const dx = Math.cos(ang)*v;
+      const dy = Math.sin(ang)*v - (opts.lift||40);
+      const rot = (Math.random()*2-1)*360;
+      const dur = opts.dur || (520 + Math.random()*260);
+      const anim = p.animate([
+        {transform:'translate(-50%,-50%) translate(0,0) rotate(0deg)', opacity:1},
+        {transform:'translate(-50%,-50%) translate('+dx+'px,'+(dy+170)+'px) rotate('+rot+'deg)', opacity:0}
+      ], {duration:dur, easing:'cubic-bezier(.2,.6,.3,1)'});
+      anim.onfinish = ()=> p.remove();
+    }
+  }
+  function monsterCenter(){
+    const r = monsterSlot.getBoundingClientRect();
+    const b = battle.getBoundingClientRect();
+    return {x: r.left - b.left + r.width/2, y: r.top - b.top + r.height/2};
+  }
+  function playerCenter(){
+    const r = playerHpBox.getBoundingClientRect();
+    const b = battle.getBoundingClientRect();
+    return {x: r.left - b.left + r.width/2, y: r.top - b.top + r.height/2};
+  }
+  function spawnHit(){ const c=monsterCenter(); burst(c.x,c.y,{count:14,colors:['#ffffff','#ffe08a','#ffd23f','#9ef'],speed:155,size:7,dur:560}); }
+  function spawnDefeat(){ const c=monsterCenter(); burst(c.x,c.y,{count:24,colors:['#ffffff','#ffd23f','#ff9a3f','#ff6b6b'],speed:210,size:9,dur:800,lift:80}); }
+  function spawnSplat(){ const c=playerCenter(); burst(c.x,c.y-12,{count:12,colors:['#ff5b5b','#ff8a8a','#c0c0c0'],speed:130,size:7,dur:560}); }
+  function spawnCombo(){ const c=monsterCenter(); burst(c.x,c.y-46,{count:10,colors:['#ffd23f','#ffffff','#9ef'],speed:120,size:5,dur:620}); }
+  function spawnEmbers(){
+    const box=$('embers'); if(!box) return;
+    box.innerHTML='';
+    for(let i=0;i<9;i++){
+      const e=document.createElement('div'); e.className='ember';
+      e.style.left=(Math.random()*100)+'%';
+      const dur=6+Math.random()*6;
+      e.style.animationDuration=dur+'s';
+      e.style.animationDelay=(-Math.random()*dur)+'s';
+      const s=3+Math.random()*4; e.style.width=s+'px'; e.style.height=s+'px';
+      box.appendChild(e);
+    }
   }
 
   /* ===== 填充題：數字鍵盤輸入 ===== */
@@ -774,10 +924,15 @@
       state.mHp--; renderHp();
       setTimeout(()=>{
         if(state.mHp<=0){
-          if(state.mIdx>=MONSTERS.length-1){ endGame(true); return; }
-          state.mIdx++; loadMonster(); showToast(MONSTERS[state.mIdx].name+' 出現！');
+          defeatMonster();
+          setTimeout(()=>{
+            if(state.mIdx>=MONSTERS.length-1){ endGame(true); return; }
+            state.mIdx++; loadMonster(); showToast(MONSTERS[state.mIdx].name+' 出現！');
+            newQuestion();
+          }, 640);
+        } else {
+          newQuestion();
         }
-        newQuestion();
       }, 850);
     } else {
       failAnswer('答錯！');
