@@ -733,11 +733,13 @@
   $('btn-start').addEventListener('click', ()=>{ Sfx.start(); show(battle); startBattle(); });
   $('btn-back').addEventListener('click', ()=> show(menu));
   $('btn-settings').addEventListener('click', ()=>{
+    stopTimer();   // 遊戲中打開設定先暫停計時
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.toggle('sel', x.dataset.diff===state.diff));
     refreshDiff(); refreshTimed();
     $('overlay-settings').classList.remove('hidden');
   });
   $('btn-scores').addEventListener('click', ()=>{
+    stopTimer();   // 遊戲中打開成績先暫停計時
     $('s-best').textContent=best.score;
     $('s-acc').textContent=best.acc+'%';
     $('s-wins').textContent=best.wins;
@@ -750,7 +752,10 @@
     document.querySelectorAll('.diff-btn').forEach(o=>o.classList.toggle('sel', o===x));
     refreshDiff();
   }));
-  $('btn-set-close').addEventListener('click', ()=> $('overlay-settings').classList.add('hidden'));
+  $('btn-set-close').addEventListener('click', ()=>{
+    $('overlay-settings').classList.add('hidden');
+    if(!battle.classList.contains('hidden')) startTimer();   // 仍在戰鬥則恢復計時
+  });
   const timedToggle=$('timed-toggle');
   function refreshTimed(){
     timedToggle.classList.toggle('on', state.timed);
@@ -762,7 +767,10 @@
     refreshTimed();
   });
   refreshTimed();   // 頁面載入時同步開關顯示（讀自 localStorage）
-  $('btn-score-close').addEventListener('click', ()=> $('overlay-scores').classList.add('hidden'));
+  $('btn-score-close').addEventListener('click', ()=>{
+    $('overlay-scores').classList.add('hidden');
+    if(!battle.classList.contains('hidden')) startTimer();   // 仍在戰鬥則恢復計時
+  });
   $('btn-again').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(battle); startBattle(); });
   $('btn-tomenu').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(menu); });
 
