@@ -840,11 +840,11 @@
 
   /* ===== 老師參數（自定題目）===== */
   const PRESETS = {
-    easy:   {count:35, maxNum:20,  ops:{add:1,sub:1,mul:0,div:0}, paren:0, decimal:0, neg:0},
-    normal: {count:35, maxNum:50,  ops:{add:1,sub:1,mul:1,div:0}, paren:0, decimal:0, neg:0},
+    easy:   {count:35, maxNum:99,  ops:{add:1,sub:1,mul:0,div:0}, paren:0, decimal:0, neg:0},
+    normal: {count:35, maxNum:99,  ops:{add:1,sub:1,mul:1,div:0}, paren:0, decimal:0, neg:0},
     hard:   {count:35, maxNum:99,  ops:{add:1,sub:1,mul:1,div:1}, paren:0, decimal:0, neg:0}
   };
-  const DEFAULT_PARAMS = {count:35, maxNum:50, ops:{add:true,sub:true,mul:false,div:false}, paren:false, decimal:false, neg:false};
+  const DEFAULT_PARAMS = {count:35, maxNum:99, ops:{add:true,sub:true,mul:false,div:false}, paren:false, decimal:false, neg:false};
   let params = JSON.parse(JSON.stringify(DEFAULT_PARAMS));
   try{ const s=localStorage.getItem('mcMathParams'); if(s){ const o=JSON.parse(s); Object.assign(params,o); params.ops=Object.assign({},DEFAULT_PARAMS.ops,o.ops||{}); } }catch(e){}
   function saveParams(){ try{ localStorage.setItem('mcMathParams', JSON.stringify(params)); }catch(e){} }
