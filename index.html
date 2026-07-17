@@ -741,12 +741,14 @@
           <button class="chip" id="tg-paren">括號</button><button class="chip" id="tg-decimal">小數</button><button class="chip" id="tg-neg">負數</button>
         </div>
       </div>
+      <div id="sheet-settings" hidden>
       <div class="sub" style="margin:16px 0 6px;">成績上傳到 Google 試算表</div>
       <div class="param-row">
         <span class="param-label">接收網址</span>
         <input class="sheet-url" id="set-sheet" type="text" inputmode="url" placeholder="貼上 Apps Script 網址" />
       </div>
       <div class="sheet-hint">成績會自動上傳到已連結的班級試算表（接收網址已預設）。如需改用其他試算表，可在此貼上新的 <code>.../exec</code> 網址；留空則不上傳。</div>
+      </div>
       <div class="acts">
         <button class="mc-btn primary" id="btn-set-close">完成</button>
       </div>
