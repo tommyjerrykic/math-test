@@ -832,6 +832,9 @@
     startTime:0, locked:false, currentAnswer:0
   };
 
+  /* 每次重新載入都回到預設狀態（V2.11）：清走學生/難度/計時/最佳/自定參數，姓名需重填 */
+  try{ ['mcMathStudent','mcMathDiff','mcMathTimed','mcMathBest','mcMathParams'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+
   /* 讀取難度 / 成績 */
   try{ const d = localStorage.getItem('mcMathDiff'); if(d) state.diff = d; }catch(e){}
   try{ const t = localStorage.getItem('mcMathTimed'); if(t) state.timed = (t==='1'); }catch(e){}
