@@ -259,6 +259,7 @@
   <div id="battle" class="screen battle hidden">
     <button class="back" id="btn-back">❰ 返回主選單</button>
     <div class="hud" id="hud">得分 0</div>
+    <div class="combo" id="combo"></div>
     <div class="stage">
       <div class="progress" id="progress"></div>
       <div class="hp">
@@ -393,6 +394,7 @@
     mIdx:0, mHp:3,
     pHp:PLAYER_MAX_HP,
     score:0, asked:0, right:0,
+    combo:0,
     startTime:0, locked:false, currentAnswer:0
   };
 
@@ -487,6 +489,7 @@
   const qText=$('q-text'), hud=$('hud'), progress=$('progress');
   const answerBtns=[...$('answers').querySelectorAll('.mc-btn')];
   const toast=$('toast');
+  const comboEl=$('combo');
 
   function refreshDiff(){
     const map={easy:'簡單',normal:'普通',hard:'困難'};
@@ -505,6 +508,15 @@
     clearTimeout(toast._t);
     toast.textContent=txt; toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
     toast._t=setTimeout(()=> toast.classList.remove('show'), 750);
+  }
+  function showCombo(){
+    if(state.combo>=2){
+      comboEl.textContent='連擊 ×'+state.combo;
+      comboEl.classList.add('show');
+      comboEl.classList.remove('pop'); void comboEl.offsetWidth; comboEl.classList.add('pop');
+    } else {
+      comboEl.classList.remove('show','pop');
+    }
   }
 
   /* ===== 戰鬥流程 ===== */
@@ -539,8 +551,8 @@
   }
   function startBattle(){
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
-    state.startTime=Date.now();
-    hud.textContent='得分 0';
+    state.combo=0; state.startTime=Date.now();
+    hud.textContent='得分 0'; comboEl.classList.remove('show','pop');
     loadMonster(); newQuestion();
   }
 
@@ -574,8 +586,12 @@
     if(!correct) answerBtns[idx].classList.add('ans-wrong');
 
     if(correct){
-      state.right++; state.score+=SCORE_PER; hud.textContent='得分 '+state.score;
-      Sfx.correct(); showToast('答對！');
+      state.right++; state.combo++;
+      const bonus = Math.min((state.combo-1)*5, 25);   // 第 2 連擊起每題 +5，封頂 +25
+      state.score += SCORE_PER + bonus;
+      hud.textContent='得分 '+state.score;
+      showCombo();
+      Sfx.correct(); showToast(bonus>0 ? '答對！ +'+(SCORE_PER+bonus) : '答對！');
       playerAttack();
       state.mHp--; renderHp();
       setTimeout(()=>{
@@ -586,6 +602,7 @@
         newQuestion();
       }, 850);
     } else {
+      state.combo=0; comboEl.classList.remove('show','pop');
       state.pHp--; renderHp(); Sfx.wrong(); showToast('答錯！');
       monsterCounter();
       setTimeout(()=>{
