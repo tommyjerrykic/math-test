@@ -176,6 +176,27 @@
   .combo-badge.show{opacity:1;color:#ffd23f;background:rgba(0,0,0,.45);}
   .combo-badge.pop{animation:pop-badge .45s ease;}
   @keyframes pop-badge{0%{transform:scale(1);}35%{transform:scale(1.22);}100%{transform:scale(1);}}
+  .q-head-right{display:flex;align-items:center;gap:8px;}
+
+  /* 題目框內計時（計時挑戰模式）*/
+  .timer-badge{font-size:17px;font-weight:900;color:#fff;
+    background:rgba(0,0,0,.4);border:2px solid #000;border-radius:8px;
+    padding:4px 11px;letter-spacing:.03em;white-space:nowrap;
+    text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;}
+  .timer-badge.urgent{color:#ff6b6b;animation:timer-pulse .5s ease-in-out infinite;}
+  @keyframes timer-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.14);}}
+  .timer-bar{height:10px;background:rgba(0,0,0,.32);border:2px solid #000;border-radius:6px;
+    overflow:hidden;margin-bottom:10px;}
+  .timer-fill{height:100%;width:100%;
+    background:linear-gradient(180deg,#8ef08e,#46b446);transition:width .12s linear;}
+
+  /* 設定：計時挑戰開關 */
+  .toggle-btn{font-size:19px;padding:15px;font-weight:800;border:3px solid #16161a;border-radius:10px;
+    cursor:pointer;color:#fff;letter-spacing:.06em;background:#52525c;width:100%;
+    box-shadow:inset 3px 3px 0 rgba(255,255,255,.18),inset -3px -3px 0 rgba(0,0,0,.3);}
+  .toggle-btn.on{background:#78af6e;outline:3px solid #ffd23f;outline-offset:2px;
+    box-shadow:inset 3px 3px 0 #a5d29b,inset -3px -3px 0 #50784b;}
+  .toggle-hint{font-size:12px;opacity:.75;margin:8px 0 18px;letter-spacing:.02em;line-height:1.5;}
 
   /* HUD：分數 */
   .hud{position:absolute;top:14px;right:70px;z-index:5;font-size:15px;font-weight:800;
@@ -286,9 +307,13 @@
 
     <div class="panel">
       <div class="qbox">
+        <div class="timer-bar" id="timer-bar" style="display:none;"><div class="timer-fill" id="timer-fill"></div></div>
         <div class="q-head">
           <div class="q-label">題目</div>
-          <div class="combo-badge" id="combo">連擊 ×0</div>
+          <div class="q-head-right">
+            <div class="timer-badge" id="timer-badge" style="display:none;">⏱ 20</div>
+            <div class="combo-badge" id="combo">連擊 ×0</div>
+          </div>
         </div>
         <div class="q-text" id="q-text">準備中…</div>
       </div>
@@ -334,6 +359,9 @@
         <button class="diff-btn" data-diff="normal">普通<small>加、減、乘（2–4 個數混合）</small></button>
         <button class="diff-btn" data-diff="hard">困難<small>加、減、乘、除（2–4 個數混合）</small></button>
       </div>
+      <div class="sub" style="margin:2px 0 8px;">計時挑戰</div>
+      <button class="toggle-btn" id="timed-toggle">計時挑戰：關閉</button>
+      <div class="toggle-hint">開啟後每題限時作答，時間到即當答錯扣血。<br>簡單 15 秒／普通 20 秒／困難 30 秒。</div>
       <div class="acts">
         <button class="mc-btn primary" id="btn-set-close">完成</button>
       </div>
@@ -411,11 +439,13 @@
     pHp:PLAYER_MAX_HP,
     score:0, asked:0, right:0,
     combo:0, maxCombo:0,
+    timed:false,
     startTime:0, locked:false, currentAnswer:0
   };
 
   /* 讀取難度 / 成績 */
   try{ const d = localStorage.getItem('mcMathDiff'); if(d) state.diff = d; }catch(e){}
+  try{ const t = localStorage.getItem('mcMathTimed'); if(t) state.timed = (t==='1'); }catch(e){}
   let best = {score:0, acc:0, wins:0, maxCombo:0};
   try{ const b = localStorage.getItem('mcMathBest'); if(b) best = JSON.parse(b); }catch(e){}
 
@@ -506,6 +536,7 @@
   const answerBtns=[...$('answers').querySelectorAll('.mc-btn')];
   const toast=$('toast');
   const comboEl=$('combo');
+  const timerBar=$('timer-bar'), timerFill=$('timer-fill'), timerBadge=$('timer-badge');
 
   function refreshDiff(){
     const map={easy:'簡單',normal:'普通',hard:'困難'};
@@ -533,6 +564,47 @@
     } else {
       comboEl.classList.remove('show','pop');
     }
+  }
+
+  /* ===== 計時挑戰模式 ===== */
+  const TIME_LIMIT = {easy:15, normal:20, hard:30};
+  let timerId = null;
+  function stopTimer(){
+    if(timerId){ clearInterval(timerId); timerId=null; }
+    timerBar.style.display='none'; timerBadge.style.display='none';
+  }
+  function startTimer(){
+    stopTimer();
+    if(!state.timed) return;
+    const total = TIME_LIMIT[state.diff] || 20;
+    timerBar.style.display='block'; timerBadge.style.display='block';
+    timerFill.style.width='100%'; timerBadge.classList.remove('urgent');
+    const end = Date.now()+total*1000;
+    const tick = ()=>{
+      const remain = Math.max(0, (end-Date.now())/1000);
+      timerFill.style.width = (remain/total*100)+'%';
+      timerBadge.textContent = '⏱ '+Math.ceil(remain);
+      if(remain<=5) timerBadge.classList.add('urgent'); else timerBadge.classList.remove('urgent');
+      if(remain<=0){ stopTimer(); onTimeout(); }
+    };
+    tick();
+    timerId = setInterval(tick, 100);
+  }
+  function failAnswer(msg){
+    state.combo=0; showCombo();
+    state.pHp--; renderHp(); Sfx.wrong(); showToast(msg);
+    monsterCounter();
+    setTimeout(()=>{
+      if(state.pHp<=0){ endGame(false); return; }
+      newQuestion();
+    }, 1100);
+  }
+  function onTimeout(){
+    if(state.locked) return;
+    state.locked=true;
+    answerBtns.forEach(b=>b.disabled=true);
+    answerBtns.forEach((b)=>{ if(parseInt(b.querySelector('.opt').textContent,10)===state.currentAnswer) b.classList.add('ans-correct'); });
+    failAnswer('時間到！');
   }
 
   /* ===== 戰鬥流程 ===== */
@@ -564,6 +636,7 @@
     qText.textContent=q.text;
     const opts=buildOptions(q.ans);
     answerBtns.forEach((b,i)=>{ b.querySelector('.opt').textContent=opts[i]; });
+    startTimer();
   }
   function startBattle(){
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
@@ -589,6 +662,7 @@
   }
 
   function onAnswer(idx){
+    stopTimer();
     if(state.locked) return;
     state.locked=true;
     answerBtns.forEach(b=>b.disabled=true);
@@ -619,18 +693,13 @@
         newQuestion();
       }, 850);
     } else {
-      state.combo=0; showCombo();
-      state.pHp--; renderHp(); Sfx.wrong(); showToast('答錯！');
-      monsterCounter();
-      setTimeout(()=>{
-        if(state.pHp<=0){ endGame(false); return; }
-        newQuestion();
-      }, 1100);
+      failAnswer('答錯！');
     }
   }
   answerBtns.forEach((b,i)=> b.addEventListener('click',()=>{ Sfx.select(); onAnswer(i); }));
 
   function endGame(win){
+    stopTimer();
     const monsBeat = win ? MONSTERS.length : state.mIdx;
     const time = Date.now()-state.startTime;
     const acc = state.asked? Math.round(state.right/state.asked*100):0;
@@ -657,7 +726,7 @@
   $('btn-back').addEventListener('click', ()=> show(menu));
   $('btn-settings').addEventListener('click', ()=>{
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.toggle('sel', x.dataset.diff===state.diff));
-    refreshDiff();
+    refreshDiff(); refreshTimed();
     $('overlay-settings').classList.remove('hidden');
   });
   $('btn-scores').addEventListener('click', ()=>{
@@ -674,6 +743,17 @@
     refreshDiff();
   }));
   $('btn-set-close').addEventListener('click', ()=> $('overlay-settings').classList.add('hidden'));
+  const timedToggle=$('timed-toggle');
+  function refreshTimed(){
+    timedToggle.classList.toggle('on', state.timed);
+    timedToggle.textContent = state.timed ? '計時挑戰：開啟' : '計時挑戰：關閉';
+  }
+  timedToggle.addEventListener('click', ()=>{
+    state.timed=!state.timed;
+    try{ localStorage.setItem('mcMathTimed', state.timed?'1':'0'); }catch(e){}
+    refreshTimed();
+  });
+  refreshTimed();   // 頁面載入時同步開關顯示（讀自 localStorage）
   $('btn-score-close').addEventListener('click', ()=> $('overlay-scores').classList.add('hidden'));
   $('btn-again').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(battle); startBattle(); });
   $('btn-tomenu').addEventListener('click', ()=>{ $('overlay-result').classList.add('hidden'); show(menu); });
