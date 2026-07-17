@@ -88,8 +88,8 @@
 
   /* ===== 戰鬥畫面 ===== */
   .battle{overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  .stage{flex:1.05;position:relative;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:14px;padding:14px;}
+  .stage{flex:1 1 auto;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:safe center;gap:14px;padding:14px;}
 
   .progress{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:800;
     color:#fff;text-shadow:1px 1px 0 #000;letter-spacing:.06em;}
@@ -98,7 +98,7 @@
   .progress .dot.done{background:#78af6e;}
   .progress .dot.cur{background:#ffd23f;box-shadow:0 0 0 3px rgba(255,210,63,.4);}
 
-  .monster-slot{position:relative;width:min(44vw,330px);aspect-ratio:1;overflow:visible;
+  .monster-slot{position:relative;width:min(44vw,330px,42vh);aspect-ratio:1;overflow:visible;
     display:flex;align-items:center;justify-content:center;border-radius:16px;
     transition:transform .3s ease;}
   .monster-demo{width:74%;image-rendering:pixelated;filter:drop-shadow(0 10px 10px rgba(0,0,0,.18));}
@@ -195,7 +195,7 @@
   .hp-fill{height:100%;width:100%;background:linear-gradient(180deg,#8ef08e,#46b446);transition:width .35s ease;}
   .hp-fill.player{background:linear-gradient(180deg,#8fb6ff,#3d7bdc);}
 
-  .panel{flex:1;background:linear-gradient(180deg,#3a3a42,#26262c);
+  .panel{flex:0 0 auto;position:relative;z-index:0;background:linear-gradient(180deg,#3a3a42,#26262c);
     border-top:6px solid #16161a;padding:18px clamp(14px,4vw,44px) 22px;
     display:flex;flex-direction:column;gap:16px;box-shadow:0 -10px 22px rgba(0,0,0,.32);}
 
@@ -350,7 +350,8 @@
 
   /* ===== 戰鬥場景背景（V2.1 美化）===== */
   .stage{position:relative;isolation:isolate;overflow:hidden;}
-  .stage > .progress, .stage > .hp, .stage > .monster-slot{position:relative;z-index:1;}
+  .stage > .progress, .stage > .hp{position:relative;z-index:1;}
+  .stage > .monster-slot{position:relative;z-index:2;}
   .scene{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
   .scene-sky{position:absolute;inset:0;
     background:
