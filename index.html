@@ -301,6 +301,7 @@
         <div class="row"><span>答對題數</span><b id="r-right">0 / 0</b></div>
         <div class="row"><span>打敗怪物</span><b id="r-mon">0 / 3</b></div>
         <div class="row"><span>用時</span><b id="r-time">00:00</b></div>
+        <div class="row"><span>最高連擊</span><b id="r-combo">0</b></div>
       </div>
       <div class="acts">
         <button class="mc-btn primary" id="btn-again">再玩一次</button>
@@ -334,6 +335,7 @@
         <div class="row"><span>最佳得分</span><b id="s-best">0</b></div>
         <div class="row"><span>最高正確率</span><b id="s-acc">0%</b></div>
         <div class="row"><span>通關次數</span><b id="s-wins">0</b></div>
+        <div class="row"><span>最高連擊</span><b id="s-combo">0</b></div>
       </div>
       <div class="acts">
         <button class="mc-btn ghost" id="btn-score-close">關閉</button>
@@ -394,13 +396,13 @@
     mIdx:0, mHp:3,
     pHp:PLAYER_MAX_HP,
     score:0, asked:0, right:0,
-    combo:0,
+    combo:0, maxCombo:0,
     startTime:0, locked:false, currentAnswer:0
   };
 
   /* 讀取難度 / 成績 */
   try{ const d = localStorage.getItem('mcMathDiff'); if(d) state.diff = d; }catch(e){}
-  let best = {score:0, acc:0, wins:0};
+  let best = {score:0, acc:0, wins:0, maxCombo:0};
   try{ const b = localStorage.getItem('mcMathBest'); if(b) best = JSON.parse(b); }catch(e){}
 
   /* ===== 題目生成 ===== */
@@ -551,7 +553,7 @@
   }
   function startBattle(){
     state.mIdx=0; state.pHp=PLAYER_MAX_HP; state.score=0; state.asked=0; state.right=0;
-    state.combo=0; state.startTime=Date.now();
+    state.combo=0; state.maxCombo=0; state.startTime=Date.now();
     hud.textContent='得分 0'; comboEl.classList.remove('show','pop');
     loadMonster(); newQuestion();
   }
@@ -587,6 +589,7 @@
 
     if(correct){
       state.right++; state.combo++;
+      if(state.combo>state.maxCombo) state.maxCombo=state.combo;
       const bonus = Math.min((state.combo-1)*5, 25);   // 第 2 連擊起每題 +5，封頂 +25
       state.score += SCORE_PER + bonus;
       hud.textContent='得分 '+state.score;
@@ -617,6 +620,7 @@
     const monsBeat = win ? MONSTERS.length : state.mIdx;
     const time = Date.now()-state.startTime;
     const acc = state.asked? Math.round(state.right/state.asked*100):0;
+    if(state.maxCombo>best.maxCombo) best.maxCombo=state.maxCombo;
     if(win){
       best.wins++;
       if(state.score>best.score) best.score=state.score;
@@ -629,6 +633,7 @@
     $('r-right').textContent = state.right+' / '+state.asked;
     $('r-mon').textContent   = monsBeat+' / '+MONSTERS.length;
     $('r-time').textContent  = fmtTime(time);
+    $('r-combo').textContent = state.maxCombo;
     win?Sfx.win():Sfx.lose();
     $('overlay-result').classList.remove('hidden');
   }
@@ -645,6 +650,7 @@
     $('s-best').textContent=best.score;
     $('s-acc').textContent=best.acc+'%';
     $('s-wins').textContent=best.wins;
+    $('s-combo').textContent=best.maxCombo;
     $('overlay-scores').classList.remove('hidden');
   });
   document.querySelectorAll('.diff-btn').forEach(x=> x.addEventListener('click',()=>{
