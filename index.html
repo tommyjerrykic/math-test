@@ -568,7 +568,9 @@
 
   /* ===== 計時挑戰模式 ===== */
   const TIME_LIMIT = {easy:15, normal:20, hard:30};
+  const TIME_BONUS_MAX = 20;   // 計時挑戰：剩餘時間滿額最多 +20 分
   let timerId = null;
+  let timerRemain = 0;         // 當前剩餘秒數（由 tick 更新，供答對計分用）
   function stopTimer(){
     if(timerId){ clearInterval(timerId); timerId=null; }
     timerBar.style.display='none'; timerBadge.style.display='none';
@@ -582,6 +584,7 @@
     const end = Date.now()+total*1000;
     const tick = ()=>{
       const remain = Math.max(0, (end-Date.now())/1000);
+      timerRemain = remain;
       timerFill.style.width = (remain/total*100)+'%';
       timerBadge.textContent = '⏱ '+Math.ceil(remain);
       if(remain<=5) timerBadge.classList.add('urgent'); else timerBadge.classList.remove('urgent');
@@ -662,6 +665,7 @@
   }
 
   function onAnswer(idx){
+    const remain = timerRemain;
     stopTimer();
     if(state.locked) return;
     state.locked=true;
@@ -679,10 +683,12 @@
       state.right++; state.combo++;
       if(state.combo>state.maxCombo) state.maxCombo=state.combo;
       const bonus = Math.min((state.combo-1)*5, 25);   // 第 2 連擊起每題 +5，封頂 +25
-      state.score += SCORE_PER + bonus;
+      const timeBonus = state.timed ? Math.round(remain/(TIME_LIMIT[state.diff]||20)*TIME_BONUS_MAX) : 0;
+      const gained = SCORE_PER + bonus + timeBonus;
+      state.score += gained;
       hud.textContent='得分 '+state.score;
       showCombo();
-      Sfx.correct(); showToast(bonus>0 ? '答對！ +'+(SCORE_PER+bonus) : '答對！');
+      Sfx.correct(); showToast('答對！ +'+gained);
       playerAttack();
       state.mHp--; renderHp();
       setTimeout(()=>{
