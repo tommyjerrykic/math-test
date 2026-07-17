@@ -108,6 +108,11 @@
     100%{opacity:0;transform:translate(-50%,-50%) rotate(-32deg) scaleX(1.12);}}
   .monster-slot.flash{border-color:#ff6b6b;box-shadow:0 0 26px rgba(255,80,80,.7);}
 
+  /* Boss 怪物特別樣式 */
+  .monster-slot.boss{border-color:#ff5b5b;box-shadow:0 0 26px rgba(255,80,80,.45);}
+  .monster-slot.boss .monster-demo{width:84%;}
+  .progress .dot.boss{background:#9b5bff;border-color:#ff5b5b;}
+
   /* 怪物反擊：向前下方撲擊 */
   .monster-demo.attack{animation:lunge .5s ease;}
   @keyframes lunge{0%{transform:translateY(0) scale(1);}
@@ -338,7 +343,7 @@
       <div class="stats">
         <div class="row"><span>得分</span><b id="r-score">0</b></div>
         <div class="row"><span>答對題數</span><b id="r-right">0 / 0</b></div>
-        <div class="row"><span>打敗怪物</span><b id="r-mon">0 / 3</b></div>
+        <div class="row"><span>打敗怪物</span><b id="r-mon">0 / 5</b></div>
         <div class="row"><span>用時</span><b id="r-time">00:00</b></div>
         <div class="row"><span>最高連擊</span><b id="r-combo">0</b></div>
       </div>
@@ -426,9 +431,11 @@
 
   /* ===== 遊戲數據 ===== */
   const MONSTERS = [
-    {name:'史萊姆', img:'monster_slime.png',  hp:3},
-    {name:'殭屍',   img:'monster_zombie.png', hp:3},
-    {name:'蜘蛛',   img:'monster_spider.png', hp:3}
+    {name:'史萊姆',    img:'monster_slime.png',     hp:6, boss:false},
+    {name:'殭屍',      img:'monster_zombie.png',     hp:6, boss:false},
+    {name:'蜘蛛',      img:'monster_spider.png',     hp:6, boss:false},
+    {name:'骷髏',      img:'monster_skeleton.png',   hp:6, boss:false},
+    {name:'大魔王龍',  img:'monster_dragon.png',     hp:11, boss:true}
   ];
   const PLAYER_MAX_HP = 5;
   const SCORE_PER = 10;
@@ -620,7 +627,8 @@
     progress.innerHTML='';
     MONSTERS.forEach((m,i)=>{
       const d=document.createElement('span'); d.className='dot';
-      if(i<state.mIdx) d.classList.add('done'); else if(i===state.mIdx) d.classList.add('cur');
+      if(i<state.mIdx) d.classList.add('done');
+      else if(i===state.mIdx){ d.classList.add('cur'); if(MONSTERS[i].boss) d.classList.add('boss'); }
       progress.appendChild(d);
     });
     const lbl=document.createElement('span');
@@ -632,6 +640,7 @@
     state.mHp=m.hp;
     monsterImg.src=m.img; monsterName.textContent=m.name;
     renderHp(); renderProgress();
+    monsterSlot.classList.toggle('boss', m.boss);   // Boss 怪物紅框+放大
   }
   function newQuestion(){
     if(battle.classList.contains('hidden')) return;   // 已離開戰鬥（如返回主選單）則不生成新題、不啟動計時
