@@ -193,26 +193,24 @@
   .q-label{font-size:13px;color:#b5791a;font-weight:800;letter-spacing:.22em;}
   .q-text{font-size:clamp(22px,4.4vw,34px);font-weight:800;color:#222;margin-top:4px;}
 
-  .answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .answers .mc-btn{font-size:22px;padding:16px 18px;min-height:68px;min-width:0;width:100%;justify-content:flex-start;}
-  .badge{flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.35);border-radius:7px;font-weight:900;font-size:18px;}
-  .opt{opacity:.92;}
-  .answers .mc-btn:nth-child(1){background:#78af6e;
-    box-shadow:inset 4px 4px 0 #a5d29b,inset -4px -4px 0 #50784b,0 5px 0 #2f472c,0 5px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
-  .answers .mc-btn:nth-child(2){background:#a0a0a0;
-    box-shadow:inset 4px 4px 0 #cdcdcd,inset -4px -4px 0 #696969,0 5px 0 #4a4a4a,0 5px 0 4px #2c2c2c;text-shadow:2px 2px 0 #4a4a4a;}
-  .answers .mc-btn:nth-child(3){background:#5b8bd0;
-    box-shadow:inset 4px 4px 0 #8fb6e6,inset -4px -4px 0 #3d629b,0 5px 0 #274a73,0 5px 0 4px #16283e;text-shadow:2px 2px 0 #274a73;}
-  .answers .mc-btn:nth-child(4){background:#d8a93a;
-    box-shadow:inset 4px 4px 0 #f0cf72,inset -4px -4px 0 #a87f1f,0 5px 0 #7a5c14,0 5px 0 4px #4a3710;text-shadow:2px 2px 0 #7a5c14;}
-  .answers .mc-btn:nth-child(1):active{box-shadow:inset 4px 4px 0 #50784b,inset -4px -4px 0 #a5d29b,0 1px 0 #2f472c,0 1px 0 4px #1c2a1a;}
-  .answers .mc-btn:nth-child(2):active{box-shadow:inset 4px 4px 0 #696969,inset -4px -4px 0 #cdcdcd,0 1px 0 #4a4a4a,0 1px 0 4px #2c2c2c;}
-  .answers .mc-btn:nth-child(3):active{box-shadow:inset 4px 4px 0 #3d629b,inset -4px -4px 0 #8fb6e6,0 1px 0 #274a73,0 1px 0 4px #16283e;}
-  .answers .mc-btn:nth-child(4):active{box-shadow:inset 4px 4px 0 #a87f1f,inset -4px -4px 0 #f0cf72,0 1px 0 #7a5c14,0 1px 0 4px #4a3710;}
-  .answers .mc-btn:disabled{cursor:default;opacity:.96;}
-  .answers .mc-btn.ans-correct{outline:4px solid #6fe06f;outline-offset:-4px;filter:brightness(1.18);}
-  .answers .mc-btn.ans-wrong{outline:4px solid #ff6b6b;outline-offset:-4px;filter:brightness(.82);}
+  .answers{display:flex;flex-direction:column;gap:14px;}
+  .answer-display{background:rgba(255,255,255,.96);border:3px solid #16161a;border-radius:10px;
+    min-height:66px;display:flex;align-items:center;justify-content:flex-end;padding:0 18px;
+    font-size:clamp(28px,6vw,40px);font-weight:900;color:#1a1a1a;letter-spacing:.04em;}
+  .answer-display.empty::before{content:'點擊數字鍵作答';font-size:20px;font-weight:700;color:#b9b9b9;}
+  .answer-display.show-correct{background:#bff5bf;}
+  .answer-display.flash-err{animation:err-flash .45s;}
+  @keyframes err-flash{0%,100%{background:rgba(255,255,255,.96);}50%{background:#ff9a9a;}}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .np-key{font-family:inherit;font-size:clamp(20px,5vw,28px);font-weight:900;color:#fff;
+    border:none;border-radius:10px;min-height:64px;cursor:pointer;user-select:none;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+    background:#5b8bd0;box-shadow:inset 3px 3px 0 #8fb6e6,inset -3px -3px 0 #3d629b,0 5px 0 #274a73,0 5px 0 4px #16283e;text-shadow:2px 2px 0 #274a73;}
+  .np-key:active{transform:translateY(3px);box-shadow:inset 3px 3px 0 #3d629b,inset -3px -3px 0 #8fb6e6,0 2px 0 #274a73,0 2px 0 4px #16283e;}
+  .np-key[data-k="del"]{background:#a0a0a0;box-shadow:inset 3px 3px 0 #cdcdcd,inset -3px -3px 0 #696969,0 5px 0 #4a4a4a,0 5px 0 4px #2c2c2c;text-shadow:2px 2px 0 #4a4a4a;}
+  .np-key[data-k="neg"]{background:#78af6e;box-shadow:inset 3px 3px 0 #a5d29b,inset -3px -3px 0 #50784b,0 5px 0 #2f472c,0 5px 0 4px #1c2a1a;text-shadow:2px 2px 0 #2f472c;}
+  .np-key[data-k="enter"]{grid-column:1 / -1;background:#d8a93a;font-size:clamp(20px,5vw,26px);box-shadow:inset 3px 3px 0 #f0cf72,inset -3px -3px 0 #a87f1f,0 5px 0 #7a5c14,0 5px 0 4px #4a3710;text-shadow:2px 2px 0 #7a5c14;}
+  .numpad.disabled{pointer-events:none;opacity:.6;}
 
   .player-hp{margin:auto calc(-1 * clamp(14px,4vw,44px)) 0;padding:10px clamp(14px,4vw,44px) 14px;
     position:sticky;bottom:0;z-index:4;background:#26262c;
@@ -374,10 +372,22 @@
         <div class="q-text" id="q-text">準備中…</div>
       </div>
       <div class="answers" id="answers">
-        <button class="mc-btn"><span class="badge">A</span><span class="opt"></span></button>
-        <button class="mc-btn"><span class="badge">B</span><span class="opt"></span></button>
-        <button class="mc-btn"><span class="badge">C</span><span class="opt"></span></button>
-        <button class="mc-btn"><span class="badge">D</span><span class="opt"></span></button>
+        <div class="answer-display empty" id="answer-display"><span id="answer-text"></span></div>
+        <div class="numpad" id="numpad">
+          <button class="np-key" data-k="7">7</button>
+          <button class="np-key" data-k="8">8</button>
+          <button class="np-key" data-k="9">9</button>
+          <button class="np-key" data-k="4">4</button>
+          <button class="np-key" data-k="5">5</button>
+          <button class="np-key" data-k="6">6</button>
+          <button class="np-key" data-k="1">1</button>
+          <button class="np-key" data-k="2">2</button>
+          <button class="np-key" data-k="3">3</button>
+          <button class="np-key" data-k="neg">±</button>
+          <button class="np-key" data-k="0">0</button>
+          <button class="np-key" data-k="del">⌫</button>
+          <button class="np-key" data-k="enter">確認作答</button>
+        </div>
       </div>
       <div class="hp player-hp">
         <span class="hp-label">玩家 HP</span>
@@ -571,19 +581,6 @@
     });
     return {text: parts.join('')+' = ?', ans: total};
   }
-  function buildOptions(ans){
-    const set=new Set([ans]);
-    const base=Math.max(3, Math.round(Math.abs(ans)*0.12));
-    const cand=shuffle([1,-1,2,-2,3,-3,5,-5,10,-10,base,-base]);
-    let i=0;
-    while(set.size<4 && i<cand.length){
-      const dd=ans+cand[i++];
-      if(dd>=0 && Number.isInteger(dd) && !set.has(dd)) set.add(dd);
-    }
-    let k=1;
-    while(set.size<4){ const dd=ans+k; if(dd>=0) set.add(dd); k++; }
-    return shuffle([...set]);
-  }
 
   /* ===== DOM ===== */
   const $ = id => document.getElementById(id);
@@ -591,7 +588,7 @@
   const monsterImg=$('monster-img'), monsterName=$('monster-name');
   const monsterHp=$('monster-hp'), playerHp=$('player-hp');
   const qText=$('q-text'), hud=$('hud'), progress=$('progress');
-  const answerBtns=[...$('answers').querySelectorAll('.mc-btn')];
+  const answerDisplay=$('answer-display'), answerText=$('answer-text'), numpad=$('numpad');
   const toast=$('toast');
   const comboEl=$('combo');
   const timerBar=$('timer-bar'), timerFill=$('timer-fill'), timerBadge=$('timer-badge');
@@ -654,6 +651,8 @@
   }
   function failAnswer(msg){
     state.combo=0; showCombo();
+    answerText.textContent = state.currentAnswer;            // 填充題：顯示正確答案
+    answerDisplay.classList.remove('show-correct'); answerDisplay.classList.add('flash-err');
     state.pHp--; renderHp(); Sfx.wrong(); showToast(msg);
     monsterCounter();
     setTimeout(()=>{
@@ -664,8 +663,7 @@
   function onTimeout(){
     if(state.locked) return;
     state.locked=true;
-    answerBtns.forEach(b=>b.disabled=true);
-    answerBtns.forEach((b)=>{ if(parseInt(b.querySelector('.opt').textContent,10)===state.currentAnswer) b.classList.add('ans-correct'); });
+    numpad.classList.add('disabled');
     failAnswer('時間到！');
   }
 
@@ -699,11 +697,11 @@
   function newQuestion(){
     if(battle.classList.contains('hidden')) return;   // 已離開戰鬥（如返回主選單）則不生成新題、不啟動計時
     state.locked=false;
-    answerBtns.forEach(b=>{ b.disabled=false; b.classList.remove('ans-correct','ans-wrong'); });
+    inputStr=''; renderInput();
+    answerDisplay.classList.remove('show-correct','flash-err');
+    numpad.classList.remove('disabled');
     const q=makeQuestion(); state.currentAnswer=q.ans; state.asked++;
     qText.textContent=q.text;
-    const opts=buildOptions(q.ans);
-    answerBtns.forEach((b,i)=>{ b.querySelector('.opt').textContent=opts[i]; });
     startTimer();
   }
   function startBattle(){
@@ -729,22 +727,40 @@
     setTimeout(()=>{ Sfx.counter(); replay(hurtFlash,'go'); replay(playerHpBox,'shake-hp'); },160);
   }
 
-  function onAnswer(idx){
+  /* ===== 填充題：數字鍵盤輸入 ===== */
+  let inputStr='';
+  function renderInput(){
+    answerText.textContent = inputStr;
+    answerDisplay.classList.toggle('empty', inputStr==='');
+  }
+  function pressKey(k){
+    if(state.locked) return;
+    if(k>='0' && k<='9'){
+      if(inputStr.replace('-','').length>=9) return;
+      inputStr += k; renderInput(); Sfx.select(); return;
+    }
+    if(k==='del'){ inputStr=inputStr.slice(0,-1); renderInput(); Sfx.select(); return; }
+    if(k==='neg'){
+      inputStr = inputStr.startsWith('-') ? inputStr.slice(1) : (inputStr==='' ? '-' : '-'+inputStr);
+      renderInput(); Sfx.select(); return;
+    }
+    if(k==='enter'){ onSubmit(); return; }
+  }
+  function onSubmit(){
+    if(state.locked) return;
+    if(inputStr==='' || inputStr==='-'){            // 未輸入：提示一下，不消耗時間
+      answerDisplay.classList.remove('flash-err'); void answerDisplay.offsetWidth; answerDisplay.classList.add('flash-err');
+      return;
+    }
     const remain = timerRemain;
     stopTimer();
-    if(state.locked) return;
+    const val = parseInt(inputStr,10);
+    if(isNaN(val)) return;
     state.locked=true;
-    answerBtns.forEach(b=>b.disabled=true);
-    const chosen=parseInt(answerBtns[idx].querySelector('.opt').textContent,10);
-    const correct = (chosen===state.currentAnswer);
-
-    // 標記正確答案
-    answerBtns.forEach((b,i)=>{
-      if(parseInt(b.querySelector('.opt').textContent,10)===state.currentAnswer) b.classList.add('ans-correct');
-    });
-    if(!correct) answerBtns[idx].classList.add('ans-wrong');
-
+    numpad.classList.add('disabled');
+    const correct = (val===state.currentAnswer);
     if(correct){
+      answerDisplay.classList.add('show-correct');
       state.right++; state.combo++;
       if(state.combo>state.maxCombo) state.maxCombo=state.combo;
       const bonus = Math.min((state.combo-1)*5, 25);   // 第 2 連擊起每題 +5，封頂 +25
@@ -767,7 +783,17 @@
       failAnswer('答錯！');
     }
   }
-  answerBtns.forEach((b,i)=> b.addEventListener('click',()=>{ Sfx.select(); onAnswer(i); }));
+  numpad.querySelectorAll('.np-key').forEach(btn=>{
+    btn.addEventListener('click', ()=> pressKey(btn.dataset.k));
+  });
+  // 實體/桌面鍵盤支援（iPad 主要用屏幕鍵盤，此為輔助）
+  window.addEventListener('keydown',(e)=>{
+    if(battle.classList.contains('hidden')) return;
+    if(e.key>='0' && e.key<='9'){ pressKey(e.key); }
+    else if(e.key==='Backspace'){ e.preventDefault(); pressKey('del'); }
+    else if(e.key==='Enter'){ e.preventDefault(); pressKey('enter'); }
+    else if(e.key==='-'||e.key==='±'){ pressKey('neg'); }
+  });
 
   function endGame(win){
     stopTimer();
