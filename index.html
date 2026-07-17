@@ -442,23 +442,34 @@
     .title{font-size:clamp(30px,9vw,56px);}
     .tagline{font-size:13px;}
     .diff-now{font-size:13px;}
-    .monster-slot{width:min(66vw,300px,40vh);}
+    .progress{font-size:12px;gap:7px;}
+    .progress .dot{width:12px;height:12px;border-radius:3px;border:1.5px solid #000;}
+    .progress .dot.cur{box-shadow:0 0 0 2px rgba(255,210,63,.4);}
+    .hp{width:min(94%,420px);gap:7px;}
+    .hp-label{font-size:12px;min-width:52px;}
+    .hp-track{height:18px;border-radius:3px;}
+    .monster-slot{width:min(70vw,280px,36vh);flex-shrink:0;}
     .stage{gap:10px;padding:10px 10px 12px;}
     .hp{width:min(92%,400px);}
     .hp-label{font-size:13px;min-width:58px;}
-    .panel{padding:14px clamp(10px,4vw,24px) 16px;gap:12px;}
-    .qbox{padding:12px 14px;}
-    .q-text{font-size:clamp(20px,6vw,32px);}
-    .q-label{font-size:12px;}
-    .answer-display{min-height:58px;font-size:clamp(26px,8vw,38px);padding:0 14px;}
+    .panel{padding:10px clamp(8px,3vw,20px) 14px;gap:9px;}
+    .qbox{padding:9px 12px 8px;}
+    .q-text{font-size:clamp(18px,5.5vw,28px);}
+    .q-label{font-size:11px;}
+    .q-head{gap:8px;}
+    .answer-display{min-height:50px;font-size:clamp(24px,7.5vw,34px);padding:0 12px;}
     .answer-display.empty::before{font-size:17px;}
-    .numpad{gap:9px;}
-    .np-key{min-height:58px;font-size:clamp(19px,6vw,26px);}
+    .numpad{gap:7px;}
+    .np-key{min-height:52px;font-size:clamp(17px,5.5vw,24px);}
+    .np-key[data-k="enter"]{min-height:46px;font-size:clamp(16px,5vw,22px);}
+    .combo-badge,.timer-badge{font-size:13px;padding:3px 8px;}
     .np-key[data-k="enter"]{font-size:clamp(18px,5vw,24px);}
     .combo-badge,.timer-badge{font-size:15px;padding:4px 10px;}
-    .hud{right:64px;font-size:14px;padding:7px 12px;}
+    .hud{top:6px;right:56px;font-size:13px;padding:5px 10px;}
+    .back{top:6px;left:10px;font-size:13px;padding:6px 11px;}
+    .sound-toggle{top:6px;right:8px;width:38px;height:38px;font-size:18px;}
     .sound-toggle{width:42px;height:42px;font-size:20px;}
-    .card{padding:22px 18px;max-width:min(440px,94vw);}
+    .card{padding:18px 14px;max-width:min(420px,96vw);}
     .card h2{font-size:25px;}
     .card .sub{font-size:13px;}
     .card .row{font-size:15px;padding:9px 12px;}
@@ -477,10 +488,18 @@
   /* ---------- 極窄手機 (iPhone SE 等 320px) ---------- */
   @media (max-width:360px){
     .menu .mc-btn{min-width:92vw;font-size:18px;}
-    .monster-slot{width:min(72vw,260px,38vh);}
-    .numpad{gap:7px;}
-    .np-key{min-height:52px;}
-    .card .mc-btn{min-width:40vw;}
+    .monster-slot{width:min(76vw,240px,34vh);}
+    .numpad{gap:6px;}
+    .np-key{min-height:48px;font-size:clamp(16px,5.5vw,22px);}
+    .np-key[data-k="enter"]{min-height:42px;}
+    .card .mc-btn{min-width:44vw;}
+    .back{font-size:12px;padding:5px 9px;top:4px;left:6px;}
+    .hud{font-size:12px;padding:4px 8px;top:4px;right:50px;}
+    .sound-toggle{width:34px;height:34px;font-size:16px;top:4px;right:4px;}
+    .progress{font-size:11px;gap:5px;}
+    .progress .dot{width:10px;height:10px;}
+    .hp-label{font-size:11px;min-width:46px;}
+    .hp-track{height:16px;}
   }
   /* ---------- 手機橫屏 / 矮屏：高度優先收縮 ---------- */
   @media (max-height:520px){
